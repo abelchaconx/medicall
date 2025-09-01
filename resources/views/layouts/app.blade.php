@@ -20,7 +20,7 @@
     <body class="font-sans antialiased">
         <x-banner />
 
-        <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
+    <div x-data="{ sidebarOpen: false }" @toggle-sidebar.window="sidebarOpen = !sidebarOpen" class="min-h-screen bg-gray-100 dark:bg-gray-900 pt-16">
             @livewire('navigation-menu')
 
             <!-- Page Heading -->
@@ -33,15 +33,22 @@
             @endif
 
             <!-- Page Content -->
-            <main>
-                {{ $slot }}
-            </main>
+            <div class="flex">
+                <x-dashboard-menu />
+                <!-- Mobile overlay when sidebar open -->
+                <div class="fixed inset-0 bg-black/40 z-30 lg:hidden" x-show="sidebarOpen" x-transition.opacity @click="sidebarOpen = false"></div>
+                <!-- Page Content -->
+                <main class="lg:ml-64 flex-1 min-h-screen">
+                    @hasSection('content')
+                        @yield('content')
+                    @else
+                        {{ $slot ?? '' }}
+                    @endif
+                </main>
+            </div>
         </div>
 
     @stack('modals')
-
-    {{-- Livewire toasts listener --}}
-    @include('components.ui.livewire-toasts')
 
     @livewireScripts
     </body>

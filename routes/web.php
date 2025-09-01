@@ -6,10 +6,6 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/ui-demo', function () {
-    return view('demo.ui');
-})->middleware('auth')->name('ui.demo');
-
 Route::middleware([
     'auth:sanctum',
     config('jetstream.auth_session'),
@@ -18,4 +14,8 @@ Route::middleware([
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->name('dashboard');
+
+    Route::get('/users', function () {
+        return view('users.index');
+    })->name('users.index');
 });

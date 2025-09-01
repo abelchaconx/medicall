@@ -16,6 +16,7 @@ return new class extends Migration
             $table->time('end_time');
             $table->integer('duration_minutes')->default(30);
             $table->timestamps();
+            $table->softDeletes();
             $table->unique(['doctor_place_id','weekday','start_time','end_time'], 'sched_unique');
         });
     }

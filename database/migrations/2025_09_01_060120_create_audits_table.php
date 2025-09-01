@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('user_ip')->nullable();
             $table->text('user_agent')->nullable();
             $table->timestamp('created_at')->useCurrent();
+            $table->softDeletes();
             $table->index(['table_name','record_id']);
         });
     }

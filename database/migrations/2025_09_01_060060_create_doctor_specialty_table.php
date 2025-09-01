@@ -14,6 +14,7 @@ return new class extends Migration
             $table->foreignId('specialty_id')->constrained('specialties')->cascadeOnDelete();
             $table->unique(['doctor_id','specialty_id']);
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

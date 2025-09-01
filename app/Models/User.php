@@ -9,6 +9,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class User extends Authenticatable
 {
@@ -19,6 +20,7 @@ class User extends Authenticatable
     use HasProfilePhoto;
     use Notifiable;
     use TwoFactorAuthenticatable;
+    use SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -29,6 +31,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+    'role_id',
+    'status',
     ];
 
     /**
@@ -69,6 +73,24 @@ class User extends Authenticatable
     public function role()
     {
         return $this->belongsTo(Role::class);
+    }
+
+    /**
+     * Return the permissions collection for this user (via role).
+     * Not an Eloquent relation since permissions are attached to roles via pivot.
+     */
+    public function permissions()
+    {
+        return $this->role ? $this->role->permissions : collect();
+    }
+
+    /**
+     * Check if the user has a permission (by name)
+     */
+    public function hasPermission(string $permissionName): bool
+    {
+        if (!$this->role) return false;
+        return $this->role->permissions()->where('name', $permissionName)->exists();
     }
 
     public function doctor()
