@@ -75,6 +75,12 @@ class User extends Authenticatable
         return $this->belongsTo(Role::class);
     }
 
+    // New many-to-many relationship for users <> roles
+    public function roles()
+    {
+        return $this->belongsToMany(Role::class, 'role_user');
+    }
+
     /**
      * Return the permissions collection for this user (via role).
      * Not an Eloquent relation since permissions are attached to roles via pivot.

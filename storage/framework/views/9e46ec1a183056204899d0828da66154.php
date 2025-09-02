@@ -142,7 +142,30 @@ unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
                                     <span class=""><?php echo e($user->role?->name); ?></span>
                                 </div>
                                 <div class="hidden md:block">
-                                    <span class="block"><?php echo e($user->role?->name); ?></span>
+                                    <div class="flex items-center gap-2">
+                                        <div class="flex flex-wrap gap-2">
+                                            <!--[if BLOCK]><![endif]--><?php $__currentLoopData = $user->roles ?? []; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $r): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                                <span class="text-xs px-2 py-1 rounded bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-100 inline-flex items-center gap-2">
+                                                    <span><?php echo e($r->name); ?></span>
+                                                    <button title="Quitar rol" onclick="confirmRemoveRole(<?php echo e($user->id); ?>, <?php echo e($r->id); ?>)" class="ml-1 text-xs text-red-600 dark:text-red-400 rounded hover:bg-red-100 dark:hover:bg-red-800 px-1">×</button>
+                                                </span>
+                                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
+                                        </div>
+                                        <?php
+                                            // compute remaining roles (exclude those already assigned)
+                                            $remainingRoles = collect($availableRoles)->except($user->roles->pluck('id')->toArray());
+                                        ?>
+                                        <!--[if BLOCK]><![endif]--><?php if($remainingRoles->isEmpty()): ?>
+                                            <div class="text-sm text-gray-500 dark:text-gray-400">Todos los roles ya están asignados</div>
+                                        <?php else: ?>
+                                            <select wire:model="selectedRole.<?php echo e($user->id); ?>" multiple size="3" class="border rounded px-2 py-1 text-sm bg-white dark:bg-gray-900 dark:text-gray-200">
+                                                <!--[if BLOCK]><![endif]--><?php $__currentLoopData = $remainingRoles; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $id => $name): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                                    <option value="<?php echo e($id); ?>"><?php echo e($name); ?></option>
+                                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
+                                            </select>
+                                            <button wire:click="assignRole(<?php echo e($user->id); ?>)" class="text-sm px-2 py-1 rounded bg-blue-600 text-white">Agregar rol(es)</button>
+                                        <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                                    </div>
                                 </div>
                             </td>
                             <td class="px-3 py-1 block md:table-cell align-top">
@@ -374,6 +397,14 @@ unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
                     iconSvg.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5-4h4m-7 4h10"/>';
                     iconSvg.className = 'h-10 w-10 text-red-600 dark:text-red-400';
                     btnOk.className = 'px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-700 focus:outline-none';
+                } else if (action === 'removeRole') {
+                    // make removeRole modal visually identical to roles.delete modal
+                    titleEl.textContent = 'Eliminar rol';
+                    textEl.textContent = 'Esta acción eliminará el rol.';
+                    iconWrap.className = 'mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-red-100 dark:bg-red-900 mb-4';
+                    iconSvg.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5-4h4m-7 4h10"/>';
+                    iconSvg.className = 'h-10 w-10 text-red-600 dark:text-red-400';
+                    btnOk.className = 'px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-700 focus:outline-none';
                 } else if (action === 'restore') {
                     titleEl.textContent = '¿Deseas restaurar este usuario?';
                     textEl.textContent = 'El usuario volverá a estar activo.';
@@ -422,6 +453,33 @@ unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
                 });
             }
         })();
+
+        // helper to confirm removing a role from a user
+        function confirmRemoveRole(userId, roleId) {
+            // prepare the modal with custom message
+            try {
+                const titleEl = document.getElementById('confirm-title');
+                const textEl = document.getElementById('confirm-text');
+                const iconWrap = document.getElementById('confirm-icon');
+                const iconSvg = document.getElementById('confirm-icon-svg');
+                const btnOk = document.getElementById('confirm-ok');
+
+                titleEl.textContent = '¿Quitar rol?';
+                textEl.textContent = 'El rol será removido del usuario.';
+                iconWrap.className = 'mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-orange-100 dark:bg-orange-900 mb-4';
+                iconSvg.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01"/>';
+                iconSvg.className = 'h-10 w-10 text-orange-600 dark:text-orange-400';
+                btnOk.className = 'px-4 py-2 rounded-md bg-orange-600 text-white hover:bg-orange-700 focus:outline-none';
+
+                // call the global confirmAction so the server-side handler receives the action
+                window.confirmAction('removeRole', userId + ':' + roleId);
+            } catch (e) {
+                // fallback: direct emit
+                if (window.Livewire && typeof Livewire.emit === 'function') {
+                    Livewire.emit('removeRole', userId, roleId);
+                }
+            }
+        }
     </script>
 </div>
 <?php /**PATH C:\laragon\www\medicall\resources\views/livewire/users.blade.php ENDPATH**/ ?>

@@ -5,6 +5,7 @@ namespace App\Http\Livewire;
 use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\User;
+use App\Models\Role;
 use Illuminate\Validation\Rule;
 
 class Users extends Component
@@ -21,6 +22,9 @@ class Users extends Component
     public $email;
     public $password;
     public $role_id;
+    // per-row selected role for assigning via table
+    public $selectedRole = [];
+    public $availableRoles = [];
 
     protected $rules = [
         'name' => 'required|string|max:255',
@@ -31,7 +35,7 @@ class Users extends Component
 
     protected $updatesQueryString = ['search','perPage','page'];
 
-    protected $listeners = ['refreshUsers' => '$refresh', 'confirmAction' => 'handleConfirmedAction'];
+    protected $listeners = ['refreshUsers' => '$refresh', 'confirmAction' => 'handleConfirmedAction', 'removeRole' => 'removeRole'];
 
     public function updatedSearch()
     {
@@ -56,6 +60,8 @@ class Users extends Component
     public function mount()
     {
         $this->perPage = $this->perPage ?: 10;
+    // load roles for assign dropdowns
+    $this->availableRoles = Role::orderBy('name')->pluck('name','id')->toArray();
     }
 
     public function render()
@@ -69,7 +75,8 @@ class Users extends Component
             });
         }
 
-        $users = $query->orderBy('id','desc')->paginate($this->perPage);
+    // eager-load roles to avoid N+1 when showing assigned roles
+    $users = $query->with('roles')->orderBy('id','desc')->paginate($this->perPage);
 
         return view('livewire.users', compact('users'));
     }
@@ -87,7 +94,8 @@ class Users extends Component
         $this->editingId = $user->id;
         $this->name = $user->name;
         $this->email = $user->email;
-        $this->role_id = $user->role_id;
+    // Prefer the first assigned role (many-to-many), fallback to legacy role_id
+    $this->role_id = optional($user->roles()->first())->id ?? $user->role_id;
         $this->password = null;
         $this->showForm = true;
     }
@@ -106,9 +114,12 @@ class Users extends Component
             $user = User::withTrashed()->findOrFail($this->editingId);
             $user->name = $this->name;
             $user->email = $this->email;
+            // keep legacy column updated for backward compatibility
             $user->role_id = $this->role_id;
             if ($this->password) $user->password = $this->password;
             $user->save();
+            // sync many-to-many roles: when editing via form we replace roles with selected one (or none)
+            $user->roles()->sync($this->role_id ? [$this->role_id] : []);
             $this->sendToast('orange', 'Usuario actualizado');
         } else {
             $user = User::create([
@@ -118,12 +129,95 @@ class Users extends Component
                 'role_id' => $this->role_id,
                 'status' => 'active',
             ]);
+            // attach role if provided
+            if ($this->role_id) {
+                $user->roles()->sync([$this->role_id]);
+            }
             $this->sendToast('green', 'Usuario creado');
         }
 
         $this->resetForm();
         $this->showForm = false;
         // Ensure pagination and listing update without relying on emit()
+        $this->resetPage();
+    }
+
+    /**
+     * Assign a role to a user from the table select.
+     */
+    public function assignRole($userId)
+    {
+        $selection = $this->selectedRole[$userId] ?? null;
+        if (empty($selection)) {
+            $this->sendToast('orange', 'Selecciona al menos un rol');
+            return;
+        }
+
+        $user = User::withTrashed()->findOrFail($userId);
+
+        // normalize selection to array
+        $roleIds = is_array($selection) ? array_values(array_filter($selection)) : [ $selection ];
+        if (empty($roleIds)) {
+            $this->sendToast('orange', 'Selecciona al menos un rol');
+            return;
+        }
+
+        // validate each id exists
+        foreach ($roleIds as $rid) {
+            if (! array_key_exists($rid, $this->availableRoles)) {
+                $this->sendToast('orange', 'Selecciona un rol válido');
+                return;
+            }
+        }
+
+        try {
+            // attach selected roles without removing existing ones
+            $user->roles()->syncWithoutDetaching($roleIds);
+            // update legacy column to last assigned role for compatibility
+            $last = end($roleIds);
+            if ($last) {
+                $user->role_id = $last;
+                $user->save();
+            }
+            $this->sendToast('green', 'Rol(es) asignado(s)');
+        } catch (\Throwable $e) {
+            \Log::error('assignRole error', ['user' => $userId, 'roles' => $roleIds, 'error' => $e->getMessage()]);
+            $this->sendToast('red', 'Error al asignar rol(es)');
+        }
+
+        unset($this->selectedRole[$userId]);
+        $this->resetPage();
+    }
+
+    /**
+     * Remove a role from a user (detach from pivot).
+     */
+    public function removeRole($userId, $roleId)
+    {
+        $user = User::withTrashed()->findOrFail($userId);
+
+        // ensure role is currently assigned
+        if (! $user->roles()->where('roles.id', $roleId)->exists()) {
+            $this->sendToast('orange', 'El usuario no tiene ese rol');
+            return;
+        }
+
+        try {
+            $user->roles()->detach($roleId);
+
+            // if legacy role_id matched removed one, set to another assigned role or null
+            if ($user->role_id == $roleId) {
+                $new = $user->roles()->first();
+                $user->role_id = $new ? $new->id : null;
+                $user->save();
+            }
+
+            $this->sendToast('green', 'Rol quitado');
+        } catch (\Throwable $e) {
+            \Log::error('removeRole error', ['user' => $userId, 'role' => $roleId, 'error' => $e->getMessage()]);
+            $this->sendToast('red', 'Error al quitar el rol');
+        }
+
         $this->resetPage();
     }
 
@@ -155,6 +249,16 @@ class Users extends Component
      */
     public function handleConfirmedAction($action, $id)
     {
+        // Support legacy actions: delete, restore and removeRole
+        if ($action === 'removeRole') {
+            // id is expected as 'userId:roleId'
+            if (is_string($id) && strpos($id, ':') !== false) {
+                [$userId, $roleId] = explode(':', $id, 2);
+                $this->removeRole($userId, $roleId);
+            }
+            return $this->resetPage();
+        }
+
         $user = User::withTrashed()->findOrFail($id);
 
         if ($action === 'delete') {

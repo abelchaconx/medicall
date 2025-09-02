@@ -121,7 +121,30 @@
                                     <span class="">{{ $user->role?->name }}</span>
                                 </div>
                                 <div class="hidden md:block">
-                                    <span class="block">{{ $user->role?->name }}</span>
+                                    <div class="flex items-center gap-2">
+                                        <div class="flex flex-wrap gap-2">
+                                            @foreach($user->roles ?? [] as $r)
+                                                <span class="text-xs px-2 py-1 rounded bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-100 inline-flex items-center gap-2">
+                                                    <span>{{ $r->name }}</span>
+                                                    <button title="Quitar rol" onclick="confirmRemoveRole({{ $user->id }}, {{ $r->id }})" class="ml-1 text-xs text-red-600 dark:text-red-400 rounded hover:bg-red-100 dark:hover:bg-red-800 px-1">×</button>
+                                                </span>
+                                            @endforeach
+                                        </div>
+                                        @php
+                                            // compute remaining roles (exclude those already assigned)
+                                            $remainingRoles = collect($availableRoles)->except($user->roles->pluck('id')->toArray());
+                                        @endphp
+                                        @if($remainingRoles->isEmpty())
+                                            <div class="text-sm text-gray-500 dark:text-gray-400">Todos los roles ya están asignados</div>
+                                        @else
+                                            <select wire:model="selectedRole.{{ $user->id }}" multiple size="3" class="border rounded px-2 py-1 text-sm bg-white dark:bg-gray-900 dark:text-gray-200">
+                                                @foreach($remainingRoles as $id => $name)
+                                                    <option value="{{ $id }}">{{ $name }}</option>
+                                                @endforeach
+                                            </select>
+                                            <button wire:click="assignRole({{ $user->id }})" class="text-sm px-2 py-1 rounded bg-blue-600 text-white">Agregar rol(es)</button>
+                                        @endif
+                                    </div>
                                 </div>
                             </td>
                             <td class="px-3 py-1 block md:table-cell align-top">
@@ -352,6 +375,14 @@
                     iconSvg.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5-4h4m-7 4h10"/>';
                     iconSvg.className = 'h-10 w-10 text-red-600 dark:text-red-400';
                     btnOk.className = 'px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-700 focus:outline-none';
+                } else if (action === 'removeRole') {
+                    // make removeRole modal visually identical to roles.delete modal
+                    titleEl.textContent = 'Eliminar rol';
+                    textEl.textContent = 'Esta acción eliminará el rol.';
+                    iconWrap.className = 'mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-red-100 dark:bg-red-900 mb-4';
+                    iconSvg.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5-4h4m-7 4h10"/>';
+                    iconSvg.className = 'h-10 w-10 text-red-600 dark:text-red-400';
+                    btnOk.className = 'px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-700 focus:outline-none';
                 } else if (action === 'restore') {
                     titleEl.textContent = '¿Deseas restaurar este usuario?';
                     textEl.textContent = 'El usuario volverá a estar activo.';
@@ -400,5 +431,32 @@
                 });
             }
         })();
+
+        // helper to confirm removing a role from a user
+        function confirmRemoveRole(userId, roleId) {
+            // prepare the modal with custom message
+            try {
+                const titleEl = document.getElementById('confirm-title');
+                const textEl = document.getElementById('confirm-text');
+                const iconWrap = document.getElementById('confirm-icon');
+                const iconSvg = document.getElementById('confirm-icon-svg');
+                const btnOk = document.getElementById('confirm-ok');
+
+                titleEl.textContent = '¿Quitar rol?';
+                textEl.textContent = 'El rol será removido del usuario.';
+                iconWrap.className = 'mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-orange-100 dark:bg-orange-900 mb-4';
+                iconSvg.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01"/>';
+                iconSvg.className = 'h-10 w-10 text-orange-600 dark:text-orange-400';
+                btnOk.className = 'px-4 py-2 rounded-md bg-orange-600 text-white hover:bg-orange-700 focus:outline-none';
+
+                // call the global confirmAction so the server-side handler receives the action
+                window.confirmAction('removeRole', userId + ':' + roleId);
+            } catch (e) {
+                // fallback: direct emit
+                if (window.Livewire && typeof Livewire.emit === 'function') {
+                    Livewire.emit('removeRole', userId, roleId);
+                }
+            }
+        }
     </script>
 </div>

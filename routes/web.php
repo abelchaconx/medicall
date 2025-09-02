@@ -22,4 +22,12 @@ Route::middleware([
     Route::get('/users/trashed', function () {
         return view('users.trashed');
     })->name('users.trashed');
+
+    Route::get('/roles', function () {
+        return view('roles.index');
+    })->name('roles.index');
+    
+    Route::get('/roles/trashed', function () {
+        return view('roles.trashed');
+    })->name('roles.trashed');
 });

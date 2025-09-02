@@ -14,6 +14,13 @@
                     Usuarios
                 </span>
             </a>
+            <a href="{{ route('roles.index') }}"
+               class="block px-4 py-2 rounded text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 {{ request()->routeIs('roles.*') ? 'bg-gray-200 dark:bg-gray-700 dark:text-gray-100 font-semibold' : '' }}">
+                <span class="inline-flex items-center gap-2">
+                    <svg class="size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7v4a1 1 0 001 1h3v2H5a1 1 0 000 2h14a1 1 0 000-2h-2v-2h3a1 1 0 001-1V7"/></svg>
+                    Roles
+                </span>
+            </a>
             
             
         </nav>
