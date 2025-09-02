@@ -81,7 +81,6 @@
                         <th class="px-3 py-2">Nombre</th>
                         <th class="px-3 py-2">Email</th>
                         <th class="px-3 py-2">Rol</th>
-                        <th class="px-3 py-2">Estado</th>
                         <th class="px-3 py-2">Acciones</th>
                     </tr>
                 </thead>
@@ -147,15 +146,7 @@
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-3 py-1 block md:table-cell align-top">
-                                <div class="md:hidden flex justify-between items-start">
-                                    <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Estado</span>
-                                    <span class="">{{ $user->status ?? ($user->trashed() ? 'deleted' : 'active') }}</span>
-                                </div>
-                                <div class="hidden md:block">
-                                    <span class="block">{{ $user->status ?? ($user->trashed() ? 'deleted' : 'active') }}</span>
-                                </div>
-                            </td>
+                            
                             <td class="px-3 py-1 block md:table-cell align-top">
                                 <div class="mt-2 md:mt-0">
                                     <div class="md:hidden flex justify-between items-center">
