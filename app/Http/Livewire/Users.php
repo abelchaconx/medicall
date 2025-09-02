@@ -31,7 +31,7 @@ class Users extends Component
 
     protected $updatesQueryString = ['search','perPage','page'];
 
-    protected $listeners = ['refreshUsers' => '$refresh'];
+    protected $listeners = ['refreshUsers' => '$refresh', 'confirmAction' => 'handleConfirmedAction'];
 
     public function updatedSearch()
     {
@@ -144,6 +144,36 @@ class Users extends Component
         }
 
         // Ensure updated listing without calling emit()
+        $this->resetPage();
+    }
+
+    /**
+     * Handle confirmations from the client (confirm dialog) and perform
+     * the requested action: 'delete' or 'restore'.
+     *
+     * Called by Livewire when the client emits the 'confirmAction' event.
+     */
+    public function handleConfirmedAction($action, $id)
+    {
+        $user = User::withTrashed()->findOrFail($id);
+
+        if ($action === 'delete') {
+            if (! $user->trashed()) {
+                $user->delete();
+                $user->status = 'deleted';
+                $user->save();
+                $this->sendToast('red', 'Usuario eliminado');
+            }
+        } elseif ($action === 'restore') {
+            if ($user->trashed()) {
+                $user->restore();
+                $user->status = 'active';
+                $user->save();
+                $this->sendToast('green', 'Usuario restaurado');
+            }
+        }
+
+        // refresh listing
         $this->resetPage();
     }
 

@@ -150,20 +150,16 @@
 
                                             @if($user->trashed())
                                                 <button
-                                                    wire:click="toggleDelete({{ $user->id }})"
-                                                    wire:loading.attr="disabled"
-                                                    wire:target="toggleDelete"
-                                                    class="inline-flex items-center justify-center w-9 h-9 rounded-full text-white bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    onclick="confirmAction('restore', {{ $user->id }})"
+                                                    class="inline-flex items-center justify-center w-9 h-9 rounded-full text-white bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 transition"
                                                     aria-label="Restaurar usuario {{ $user->id }}"
                                                 >
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h4l3-3 4 4 5-5v11a2 2 0 01-2 2H5a2 2 0 01-2-2V10z"/></svg>
                                                 </button>
                                             @else
                                                 <button
-                                                    wire:click="toggleDelete({{ $user->id }})"
-                                                    wire:loading.attr="disabled"
-                                                    wire:target="toggleDelete"
-                                                    class="inline-flex items-center justify-center w-9 h-9 rounded-full text-white bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    onclick="confirmAction('delete', {{ $user->id }})"
+                                                    class="inline-flex items-center justify-center w-9 h-9 rounded-full text-white bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 transition"
                                                     aria-label="Eliminar usuario {{ $user->id }}"
                                                 >
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5-4h4m-7 4h10"/></svg>
@@ -185,20 +181,16 @@
 
                                         @if($user->trashed())
                                             <button
-                                                wire:click="toggleDelete({{ $user->id }})"
-                                                wire:loading.attr="disabled"
-                                                wire:target="toggleDelete"
-                                                class="w-full md:w-auto text-sm px-3 py-1 rounded text-white bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                                onclick="confirmAction('restore', {{ $user->id }})"
+                                                class="w-full md:w-auto text-sm px-3 py-1 rounded text-white bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 transition"
                                                 aria-label="Restaurar usuario {{ $user->id }}"
                                             >
                                                 Restaurar
                                             </button>
                                         @else
                                             <button
-                                                wire:click="toggleDelete({{ $user->id }})"
-                                                wire:loading.attr="disabled"
-                                                wire:target="toggleDelete"
-                                                class="w-full md:w-auto text-sm px-3 py-1 rounded text-white bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                                onclick="confirmAction('delete', {{ $user->id }})"
+                                                class="w-full md:w-auto text-sm px-3 py-1 rounded text-white bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 transition"
                                                 aria-label="Eliminar usuario {{ $user->id }}"
                                             >
                                                 Eliminar
@@ -300,4 +292,113 @@
     @if(session()->has('toast'))
         <script>window.dispatchEvent(new CustomEvent('showToast',{detail:@json(session('toast'))}));</script>
     @endif
+
+    <!-- Confirmation modal (SweetAlert2-like, improved) -->
+    <div id="confirm-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black bg-opacity-40 backdrop-blur-sm backdrop-filter p-4">
+        <div id="confirm-panel" class="transform transition-opacity transition-transform duration-200 ease-out opacity-0 -translate-y-2 scale-95 bg-white dark:bg-gray-800 rounded-lg shadow-2xl max-w-lg w-full overflow-hidden">
+            <div class="p-6 text-center">
+                <div id="confirm-icon" class="mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-red-100 dark:bg-red-900 mb-4">
+                    <!-- icon svg replaced dynamically -->
+                    <svg id="confirm-icon-svg" xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </div>
+                <h3 id="confirm-title" class="text-xl font-semibold text-gray-900 dark:text-gray-100">¿Estás seguro?</h3>
+                <div id="confirm-text" class="mt-2 text-sm text-gray-600 dark:text-gray-300">Esta acción no se puede deshacer.</div>
+            </div>
+            <div class="px-6 pb-6 pt-0 bg-gray-50 dark:bg-gray-900 flex justify-center gap-3">
+                <button id="confirm-cancel" class="px-4 py-2 rounded-md bg-white border border-gray-200 text-gray-700 hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200">Cancelar</button>
+                <button id="confirm-ok" class="px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-700 focus:outline-none">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Enhanced sweetalert-like confirm dialog with animation and icon
+        (function(){
+            const modal = document.getElementById('confirm-modal');
+            const panel = document.getElementById('confirm-panel');
+            const iconWrap = document.getElementById('confirm-icon');
+            const iconSvg = document.getElementById('confirm-icon-svg');
+            const titleEl = document.getElementById('confirm-title');
+            const textEl = document.getElementById('confirm-text');
+            const btnOk = document.getElementById('confirm-ok');
+            const btnCancel = document.getElementById('confirm-cancel');
+
+            let pending = null; // { action, id }
+
+            function showModal() {
+                modal.classList.remove('hidden');
+                // trigger Tailwind animation by toggling classes
+                requestAnimationFrame(() => {
+                    panel.classList.remove('opacity-0','-translate-y-2','scale-95');
+                    panel.classList.add('opacity-100','translate-y-0','scale-100');
+                });
+            }
+
+            function hideModal() {
+                // reverse animation then hide
+                panel.classList.remove('opacity-100','translate-y-0','scale-100');
+                panel.classList.add('opacity-0','-translate-y-2','scale-95');
+                setTimeout(() => modal.classList.add('hidden'), 200);
+            }
+
+            window.confirmAction = function(action, id) {
+                pending = { action, id };
+
+                if (action === 'delete') {
+                    titleEl.textContent = '¿Deseas eliminar este usuario?';
+                    textEl.textContent = 'Se marcará como eliminado y no será accesible hasta restaurarse.';
+                    // red icon
+                    iconWrap.className = 'mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-red-100 dark:bg-red-900 mb-4';
+                    iconSvg.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5-4h4m-7 4h10"/>';
+                    iconSvg.className = 'h-10 w-10 text-red-600 dark:text-red-400';
+                    btnOk.className = 'px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-700 focus:outline-none';
+                } else if (action === 'restore') {
+                    titleEl.textContent = '¿Deseas restaurar este usuario?';
+                    textEl.textContent = 'El usuario volverá a estar activo.';
+                    // green icon
+                    iconWrap.className = 'mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-green-100 dark:bg-green-900 mb-4';
+                    iconSvg.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>';
+                    iconSvg.className = 'h-10 w-10 text-green-600 dark:text-green-400';
+                    btnOk.className = 'px-4 py-2 rounded-md bg-green-600 text-white hover:bg-green-700 focus:outline-none';
+                } else {
+                    titleEl.textContent = 'Confirmar acción';
+                    textEl.textContent = '¿Estás seguro?';
+                    iconWrap.className = 'mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-gray-100 dark:bg-gray-800 mb-4';
+                    iconSvg.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01"/>';
+                    iconSvg.className = 'h-10 w-10 text-gray-600 dark:text-gray-300';
+                    btnOk.className = 'px-4 py-2 rounded-md bg-gray-800 text-white hover:bg-gray-900 focus:outline-none';
+                }
+
+                showModal();
+                btnOk.focus();
+            }
+
+            function closeModal() {
+                pending = null;
+                hideModal();
+            }
+
+            btnCancel.addEventListener('click', closeModal);
+            modal.addEventListener('click', function(e){ if (e.target === modal) closeModal(); });
+
+            btnOk.addEventListener('click', function(){
+                if (!pending) return closeModal();
+                if (window.Livewire && typeof Livewire.emit === 'function') {
+                    Livewire.emit('confirmAction', pending.action, pending.id);
+                } else {
+                    window.dispatchEvent(new CustomEvent('confirmAction', { detail: { action: pending.action, id: pending.id } }));
+                }
+                closeModal();
+            });
+
+            if (window.Livewire && typeof Livewire.on === 'function') {
+                Livewire.on('openConfirm', (payload) => {
+                    try {
+                        const p = (payload && payload.detail) ? payload.detail : payload;
+                        window.confirmAction(p.action, p.id);
+                    } catch(e){}
+                });
+            }
+        })();
+    </script>
 </div>

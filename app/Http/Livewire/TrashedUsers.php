@@ -15,6 +15,8 @@ class TrashedUsers extends Component
     // Use Tailwind for pagination styling
     protected $paginationTheme = 'tailwind';
 
+    protected $listeners = ['confirmAction' => 'handleConfirmedAction'];
+
     public function render()
     {
     $users = User::onlyTrashed()->orderBy('deleted_at', 'desc')->paginate($this->perPage);
@@ -32,6 +34,22 @@ class TrashedUsers extends Component
     $this->dispatch('toast', ['type' => 'green', 'message' => 'Usuario restaurado']);
     // also set a session flash for full page loads or fallbacks
     session()->flash('toast', ['type' => 'green', 'message' => 'Usuario restaurado']);
+        $this->resetPage();
+    }
+
+    public function handleConfirmedAction($action, $id)
+    {
+        if ($action === 'restore') {
+            $user = User::onlyTrashed()->findOrFail($id);
+            if ($user->trashed()) {
+                $user->restore();
+                $user->status = 'active';
+                $user->save();
+                $this->dispatch('toast', ['type' => 'green', 'message' => 'Usuario restaurado']);
+                session()->flash('toast', ['type' => 'green', 'message' => 'Usuario restaurado']);
+            }
+        }
+
         $this->resetPage();
     }
 }

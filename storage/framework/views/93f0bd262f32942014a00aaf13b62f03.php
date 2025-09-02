@@ -13,45 +13,45 @@
                     </tr>
                 </thead>
                 <tbody class="md:table-row-group">
-                    @forelse($users as $user)
+                    <!--[if BLOCK]><![endif]--><?php $__empty_1 = true; $__currentLoopData = $users; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $user): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                         <tr class="block md:table-row mb-3 md:mb-0 bg-white dark:bg-gray-800 rounded-lg md:rounded-none shadow-sm md:shadow-none overflow-hidden">
                             <td class="px-3 py-1 block md:table-cell align-top">
                                 <div class="md:hidden flex justify-between items-start">
                                     <span class="text-sm font-medium text-gray-500 dark:text-gray-400">ID</span>
-                                    <span class="font-semibold">{{ $user->id }}</span>
+                                    <span class="font-semibold"><?php echo e($user->id); ?></span>
                                 </div>
                                 <div class="hidden md:block">
-                                    <span class="block font-semibold">{{ $user->id }}</span>
+                                    <span class="block font-semibold"><?php echo e($user->id); ?></span>
                                 </div>
                             </td>
 
                             <td class="px-3 py-1 block md:table-cell align-top">
                                 <div class="md:hidden flex justify-between items-start">
                                     <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Nombre</span>
-                                    <span class="">{{ $user->name }}</span>
+                                    <span class=""><?php echo e($user->name); ?></span>
                                 </div>
                                 <div class="hidden md:block">
-                                    <span class="block">{{ $user->name }}</span>
+                                    <span class="block"><?php echo e($user->name); ?></span>
                                 </div>
                             </td>
 
                             <td class="px-3 py-1 block md:table-cell align-top break-words">
                                 <div class="md:hidden flex justify-between items-start">
                                     <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Email</span>
-                                    <span class="text-sm truncate max-w-[60%] text-left">{{ $user->email }}</span>
+                                    <span class="text-sm truncate max-w-[60%] text-left"><?php echo e($user->email); ?></span>
                                 </div>
                                 <div class="hidden md:block">
-                                    <span class="block text-sm truncate">{{ $user->email }}</span>
+                                    <span class="block text-sm truncate"><?php echo e($user->email); ?></span>
                                 </div>
                             </td>
 
                             <td class="px-3 py-1 block md:table-cell align-top">
                                 <div class="md:hidden flex justify-between items-start">
                                     <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Eliminado</span>
-                                    <span class="text-sm">{{ $user->deleted_at?->diffForHumans() }}</span>
+                                    <span class="text-sm"><?php echo e($user->deleted_at?->diffForHumans()); ?></span>
                                 </div>
                                 <div class="hidden md:block">
-                                    <span class="block text-sm">{{ $user->deleted_at?->diffForHumans() }}</span>
+                                    <span class="block text-sm"><?php echo e($user->deleted_at?->diffForHumans()); ?></span>
                                 </div>
                             </td>
 
@@ -61,9 +61,9 @@
                                         <span class="text-sm font-medium text-gray-500">Acciones</span>
                                         <div class="flex items-center space-x-2">
                                             <button
-                                                onclick="confirmActionTrashed('restore', {{ $user->id }})"
+                                                onclick="confirmActionTrashed('restore', <?php echo e($user->id); ?>)"
                                                 class="inline-flex items-center justify-center w-9 h-9 rounded-full text-white bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 transition"
-                                                aria-label="Restaurar usuario {{ $user->id }}"
+                                                aria-label="Restaurar usuario <?php echo e($user->id); ?>"
                                             >
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h4l3-3 4 4 5-5v11a2 2 0 01-2 2H5a2 2 0 01-2-2V10z"/></svg>
                                             </button>
@@ -72,9 +72,9 @@
 
                                     <div class="hidden md:flex md:flex-row md:items-center md:gap-2">
                                         <button
-                                            onclick="confirmActionTrashed('restore', {{ $user->id }})"
+                                            onclick="confirmActionTrashed('restore', <?php echo e($user->id); ?>)"
                                             class="w-full md:w-auto text-sm px-3 py-1 rounded text-white bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 transition"
-                                            aria-label="Restaurar usuario {{ $user->id }}"
+                                            aria-label="Restaurar usuario <?php echo e($user->id); ?>"
                                         >
                                             Restaurar
                                         </button>
@@ -82,17 +82,18 @@
                                 </div>
                             </td>
                         </tr>
-                    @empty
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                         <tr>
                             <td colspan="5" class="px-4 py-6 text-center text-sm text-gray-500">No hay usuarios eliminados</td>
                         </tr>
-                    @endforelse
+                    <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
                 </tbody>
             </table>
         </div>
 
         <div class="p-3">
-            {{ $users->links() }}
+            <?php echo e($users->links()); ?>
+
         </div>
     </div>
 
@@ -161,9 +162,9 @@
         </div>
     </div>
 
-    @if(session()->has('toast'))
-        <script>window.dispatchEvent(new CustomEvent('showToast',{detail:@json(session('toast'))}));</script>
-    @endif
+    <!--[if BLOCK]><![endif]--><?php if(session()->has('toast')): ?>
+        <script>window.dispatchEvent(new CustomEvent('showToast',{detail:<?php echo json_encode(session('toast'), 15, 512) ?>}));</script>
+    <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
 
 <!-- Confirmation modal for trashed users (unique IDs) -->
 <div id="confirm-modal-trashed" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black bg-opacity-40 backdrop-blur-sm backdrop-filter p-4">
@@ -236,3 +237,4 @@
 </script>
 
 </div>
+<?php /**PATH C:\laragon\www\medicall\resources\views/livewire/trashed-users.blade.php ENDPATH**/ ?>
