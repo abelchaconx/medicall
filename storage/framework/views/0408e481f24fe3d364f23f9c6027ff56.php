@@ -18,7 +18,8 @@
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 items-center">
             <div class="col-span-1 hidden sm:block"></div>
             <div class="col-span-1">
-                <input wire:model.defer="search" type="text" placeholder="Buscar rol..." class="border rounded px-3 py-2 w-full bg-white dark:bg-gray-900 dark:text-gray-200" />
+                <label for="search-roles" class="sr-only">Buscar rol</label>
+                <input id="search-roles" wire:model.defer="search" type="text" placeholder="Buscar rol..." class="border rounded px-3 py-2 w-full bg-white dark:bg-gray-900 dark:text-gray-200" />
             </div>
             <div class="col-span-1">
                 <div class="flex w-full items-center justify-center sm:justify-end gap-2">
@@ -33,8 +34,8 @@
         <div class="p-4 border rounded bg-white dark:bg-gray-800 mb-4">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Name</label>
-                    <input wire:model.defer="name" type="text" class="mt-1 block w-full border rounded px-2 py-1 bg-white dark:bg-gray-900 dark:text-gray-200" />
+                    <label for="role-name" class="block text-sm font-medium text-gray-700 dark:text-gray-200">Name</label>
+                    <input id="role-name" wire:model.defer="name" type="text" class="mt-1 block w-full border rounded px-2 py-1 bg-white dark:bg-gray-900 dark:text-gray-200" />
                     <!--[if BLOCK]><![endif]--><?php $__errorArgs = ['name'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
@@ -45,8 +46,8 @@ endif;
 unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Label</label>
-                    <input wire:model.defer="label" type="text" class="mt-1 block w-full border rounded px-2 py-1 bg-white dark:bg-gray-900 dark:text-gray-200" />
+                    <label for="role-label" class="block text-sm font-medium text-gray-700 dark:text-gray-200">Label</label>
+                    <input id="role-label" wire:model.defer="label" type="text" class="mt-1 block w-full border rounded px-2 py-1 bg-white dark:bg-gray-900 dark:text-gray-200" />
                     <!--[if BLOCK]><![endif]--><?php $__errorArgs = ['label'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
@@ -85,6 +86,49 @@ unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
                                 </div>
                                 <div class="hidden md:block">
                                     <span class="block font-semibold"><?php echo e($role->id); ?></span>
+                                </div>
+                            </td>
+                            <td class="px-3 py-1 block md:table-cell align-top">
+                                <div class="md:hidden flex justify-between items-start">
+                                    <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Permisos</span>
+                                    <div>
+                                        <!--[if BLOCK]><![endif]--><?php $__currentLoopData = $role->permissions; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $perm): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 mr-1"><?php echo e($perm->name); ?></span>
+                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
+                                    </div>
+                                </div>
+                                <div class="hidden md:block">
+                                    <div class="flex flex-wrap items-center gap-2">
+                                        <!--[if BLOCK]><![endif]--><?php $__currentLoopData = $role->permissions; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $perm): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200">
+                                                <?php echo e($perm->name); ?>
+
+                                                <button onclick="confirmActionRoles('removePermission', <?php echo e($role->id); ?>, <?php echo e($perm->id); ?>)" class="ml-2 text-red-500 hover:text-red-700">&times;</button>
+                                            </span>
+                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
+                                    </div>
+                                    <?php
+                                        $unassigned = collect($availablePermissions)->filter(function($name, $pid) use ($role) {
+                                            return !$role->permissions->contains('id', $pid);
+                                        });
+                                    ?>
+
+                                    <!--[if BLOCK]><![endif]--><?php if($unassigned->isNotEmpty()): ?>
+                                        <div class="mt-2">
+                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                                <!--[if BLOCK]><![endif]--><?php $__currentLoopData = $unassigned; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $pid => $pname): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                                    <?php $chkId = 'perm-'.$role->id.'-'.$pid; ?>
+                                                    <label for="<?php echo e($chkId); ?>" class="inline-flex items-center space-x-2 text-sm">
+                                                        <input id="<?php echo e($chkId); ?>" type="checkbox" wire:model="selectedPermissions.<?php echo e($role->id); ?>" wire:key="<?php echo e($chkId); ?>" value="<?php echo e($pid); ?>" class="form-checkbox h-4 w-4 text-indigo-600" />
+                                                        <span class="truncate"><?php echo e($pname); ?></span>
+                                                    </label>
+                                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
+                                            </div>
+                                            <div class="mt-2">
+                                                <button wire:click="assignPermissions(<?php echo e($role->id); ?>)" class="text-sm px-3 py-1 rounded bg-green-600 text-white">Guardar permisos</button>
+                                            </div>
+                                        </div>
+                                    <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
                                 </div>
                             </td>
                             <td class="px-3 py-1 block md:table-cell align-top">
@@ -132,9 +176,52 @@ unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
         </div>
     </div>
 
-    <!-- Toast container -->
-    <div x-data="{ show:false, message:'', color:'bg-green-500', timer:null, open(payloadOrType, maybeMessage=''){ let type='green'; let message=''; if(payloadOrType && typeof payloadOrType === 'string'){ const s = payloadOrType.trim(); if((s.startsWith('{')&& s.endsWith('}'))||(s.startsWith('[')&&s.endsWith(']'))){ try{ payloadOrType = JSON.parse(payloadOrType);}catch(e){}}} if(payloadOrType && typeof payloadOrType==='object'){ const candidate = payloadOrType.detail && typeof payloadOrType.detail === 'object' ? payloadOrType.detail : payloadOrType; type = candidate.type || candidate[0] || candidate.status || 'green'; message = candidate.message || candidate[1] || candidate.text || ''; } else{ type = payloadOrType || 'green'; message = maybeMessage || ''; } type=(type||'green').toString(); message=(message||'').toString(); this.message = message; if(type === 'red') this.color='bg-red-500'; else if(type === 'orange') this.color='bg-orange-500'; else this.color='bg-green-500'; this.show=true; clearTimeout(this.timer); this.timer=setTimeout(()=> this.show=false,3500);} }"
-         x-init="window.addEventListener('toast', e => open(e.detail)); window.addEventListener('showToast', e => open(e.detail)); if(window.Livewire && typeof Livewire.on === 'function'){ Livewire.on('toast', (...args) => open(...args)); Livewire.on('showToast', (...args) => open(...args)); }"
+    <!-- Toast container (same as users) -->
+    <div x-data="{
+        show: false,
+        message: '',
+        color: 'bg-green-500',
+        timer: null,
+        open(payloadOrType, maybeMessage = '') {
+            let type = 'green';
+            let message = '';
+
+            if (payloadOrType && typeof payloadOrType === 'string') {
+                const s = payloadOrType.trim();
+                if ((s.startsWith('{') && s.endsWith('}')) || (s.startsWith('[') && s.endsWith(']'))) {
+                    try { payloadOrType = JSON.parse(payloadOrType); } catch (e) { /* ignore */ }
+                }
+            }
+
+            if (payloadOrType && typeof payloadOrType === 'object') {
+                const candidate = payloadOrType.detail && typeof payloadOrType.detail === 'object' ? payloadOrType.detail : payloadOrType;
+                type = candidate.type || candidate[0] || candidate.status || 'green';
+                message = candidate.message || candidate[1] || candidate.text || '';
+            } else {
+                type = payloadOrType || 'green';
+                message = maybeMessage || '';
+            }
+
+            type = (type || 'green').toString();
+            message = (message || '').toString();
+
+            this.message = message;
+            if (type === 'red') this.color = 'bg-red-500';
+            else if (type === 'orange') this.color = 'bg-orange-500';
+            else this.color = 'bg-green-500';
+            this.show = true;
+            clearTimeout(this.timer);
+            this.timer = setTimeout(() => this.show = false, 3500);
+        }
+    }"
+         x-init="
+             window.addEventListener('toast', e => open(e.detail));
+             window.addEventListener('showToast', e => open(e.detail));
+             if (window.Livewire && typeof Livewire.on === 'function') {
+                 Livewire.on('toast', (...args) => open(...args));
+                 Livewire.on('showToast', (...args) => open(...args));
+             }
+         "
          class="fixed bottom-6 right-6 flex items-end justify-end pointer-events-none z-50 px-4 sm:px-6" aria-live="polite">
         <div x-show="show" x-transition.opacity.duration.200ms class="pointer-events-auto">
             <div class="max-w-sm w-full bg-white dark:bg-gray-800 rounded-lg shadow-xl ring-1 ring-black ring-opacity-5 border border-gray-100 dark:border-gray-700 overflow-hidden flex items-center">
@@ -201,10 +288,20 @@ unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
                 setTimeout(() => modal.classList.add('hidden'), 200);
             }
 
-            window.confirmActionRoles = function(action, id) {
-                pending = { action, id };
-                document.getElementById('confirm-title-roles').textContent = action === 'delete' ? 'Eliminar rol' : 'Confirmar acción';
-                document.getElementById('confirm-text-roles').textContent = action === 'delete' ? 'Esta acción eliminará el rol.' : '¿Estás seguro?';
+            // Accept action plus any number of args; emit them as separate args to Livewire
+            window.confirmActionRoles = function(action, ...args) {
+                pending = { action, args };
+                // customize title/text for known actions
+                if (action === 'delete') {
+                    document.getElementById('confirm-title-roles').textContent = 'Eliminar rol';
+                    document.getElementById('confirm-text-roles').textContent = 'Esta acción eliminará el rol.';
+                } else if (action === 'removePermission') {
+                    document.getElementById('confirm-title-roles').textContent = 'Quitar permiso';
+                    document.getElementById('confirm-text-roles').textContent = '¿Deseas quitar este permiso al rol?';
+                } else {
+                    document.getElementById('confirm-title-roles').textContent = 'Confirmar acción';
+                    document.getElementById('confirm-text-roles').textContent = '¿Estás seguro?';
+                }
                 showModal();
                 btnOk.focus();
             }
@@ -215,9 +312,14 @@ unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
             btnOk.addEventListener('click', function(){
                 if (!pending) return hideModal();
                 if (window.Livewire && typeof Livewire.emit === 'function') {
-                    Livewire.emit('confirmActionRoles', pending.action, pending.id);
+                    try {
+                        Livewire.emit.apply(Livewire, ['confirmActionRoles', pending.action].concat(pending.args || []));
+                    } catch(e) {
+                        Livewire.emit('confirmActionRoles', pending.action, ...(pending.args || []));
+                    }
                 } else {
-                    window.dispatchEvent(new CustomEvent('confirmActionRoles', { detail: { action: pending.action, id: pending.id } }));
+                    // fallback: dispatch custom event with detail containing action and args
+                    window.dispatchEvent(new CustomEvent('confirmActionRoles', { detail: { action: pending.action, args: pending.args || [] } }));
                 }
                 hideModal();
             });

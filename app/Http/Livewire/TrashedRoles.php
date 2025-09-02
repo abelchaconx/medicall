@@ -25,20 +25,20 @@ class TrashedRoles extends Component
     {
         $role = Role::onlyTrashed()->findOrFail($id);
         $role->restore();
-        $payload = ['type' => 'green', 'message' => 'Rol restaurado'];
-
-        if (method_exists($this, 'dispatch') && is_callable([$this, 'dispatch'])) {
-            $this->dispatch('toast', $payload);
-            $this->dispatch('toast', $payload['type'] ?? '', $payload['message'] ?? '');
-            $this->dispatch('showToast', $payload);
-            $this->dispatch('showToast', $payload['type'] ?? '', $payload['message'] ?? '');
-        } elseif (method_exists($this, 'dispatchBrowserEvent') && is_callable([$this, 'dispatchBrowserEvent'])) {
-            $this->dispatchBrowserEvent('toast', $payload);
-            $this->dispatchBrowserEvent('showToast', $payload);
-        } else {
-            session()->flash('toast', $payload);
-        }
+        $this->sendToast('green', 'Rol restaurado');
         $this->resetPage();
+    }
+
+    protected function sendToast(string $type, string $message)
+    {
+        $payload = ['type' => $type, 'message' => $message];
+        if (is_callable([$this, 'emit'])) {
+            try { $this->emit('showToast', $payload); } catch (\Throwable $e) {}
+        }
+        if (method_exists($this, 'dispatchBrowserEvent') && is_callable([$this, 'dispatchBrowserEvent'])) {
+            $this->dispatchBrowserEvent('showToast', $payload);
+        }
+        session()->flash('toast', $payload);
     }
 
     public function handleConfirmedAction($action, $id)

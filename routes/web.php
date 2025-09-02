@@ -30,4 +30,12 @@ Route::middleware([
     Route::get('/roles/trashed', function () {
         return view('roles.trashed');
     })->name('roles.trashed');
+    
+    Route::get('/permissions', function () {
+        return view('permissions.index');
+    })->name('permissions.index');
+
+    Route::get('/permissions/trashed', function () {
+        return view('permissions.trashed');
+    })->name('permissions.trashed');
 });

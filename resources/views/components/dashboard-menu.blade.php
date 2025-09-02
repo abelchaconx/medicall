@@ -21,6 +21,13 @@
                     Roles
                 </span>
             </a>
+            <a href="{{ route('permissions.index') }}"
+               class="block px-4 py-2 rounded text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 {{ request()->routeIs('permissions.*') ? 'bg-gray-200 dark:bg-gray-700 dark:text-gray-100 font-semibold' : '' }}">
+                <span class="inline-flex items-center gap-2">
+                    <svg class="size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M7 7h10M7 11h10M7 15h6"/></svg>
+                    Permisos
+                </span>
+            </a>
             
             
         </nav>

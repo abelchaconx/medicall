@@ -24,16 +24,25 @@ class TrashedUsers extends Component
     return view('livewire.trashed-users', compact('users'));
     }
 
+    protected function sendToast(string $type, string $message)
+    {
+        $payload = ['type' => $type, 'message' => $message];
+        if (is_callable([$this, 'emit'])) {
+            try { $this->emit('showToast', $payload); } catch (\Throwable $e) {}
+        }
+        if (method_exists($this, 'dispatchBrowserEvent') && is_callable([$this, 'dispatchBrowserEvent'])) {
+            $this->dispatchBrowserEvent('showToast', $payload);
+        }
+        session()->flash('toast', $payload);
+    }
+
     public function restore($id)
     {
         $user = User::onlyTrashed()->findOrFail($id);
         $user->restore();
         $user->status = 'active';
         $user->save();
-    // Dispatch a Livewire event so the frontend can show a toast (Livewire v3)
-    $this->dispatch('toast', ['type' => 'green', 'message' => 'Usuario restaurado']);
-    // also set a session flash for full page loads or fallbacks
-    session()->flash('toast', ['type' => 'green', 'message' => 'Usuario restaurado']);
+    $this->sendToast('green', 'Usuario restaurado');
         $this->resetPage();
     }
 
@@ -45,8 +54,7 @@ class TrashedUsers extends Component
                 $user->restore();
                 $user->status = 'active';
                 $user->save();
-                $this->dispatch('toast', ['type' => 'green', 'message' => 'Usuario restaurado']);
-                session()->flash('toast', ['type' => 'green', 'message' => 'Usuario restaurado']);
+                $this->sendToast('green', 'Usuario restaurado');
             }
         }
 
