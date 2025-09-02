@@ -30,11 +30,13 @@ window.toastComponent = function(){
                     Livewire.on('showToast', handler);
                 } else {
                     const handler = function(e){
-                        const s = e.detail || {};
-                        const t = (s.type || s[0] || '').toString();
-                        const m = (s.message || s[1] || '').toString();
-                        window.toastComponent().pushToast(t || 'info', m || '');
-                    };
+                            // be tolerant of nested wrappers: e.detail may itself contain { detail: payload }
+                            let s = e.detail || {};
+                            if (s && typeof s === 'object' && s.detail && typeof s.detail === 'object') s = s.detail;
+                            const t = (s.type || s[0] || '').toString();
+                            const m = (s.message || s[1] || s.text || '').toString();
+                            window.toastComponent().pushToast(t || 'info', m || '');
+                        };
                     window.addEventListener('showToast', handler);
                 }
             };

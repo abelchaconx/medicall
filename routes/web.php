@@ -18,4 +18,8 @@ Route::middleware([
     Route::get('/users', function () {
         return view('users.index');
     })->name('users.index');
+    
+    Route::get('/users/trashed', function () {
+        return view('users.trashed');
+    })->name('users.trashed');
 });

@@ -44,6 +44,15 @@ class Users extends Component
         $this->resetPage();
     }
 
+    /**
+     * Clear the search input and show the full listing.
+     */
+    public function clearSearch()
+    {
+        $this->search = '';
+        $this->resetPage();
+    }
+
     public function mount()
     {
         $this->perPage = $this->perPage ?: 10;
@@ -100,7 +109,7 @@ class Users extends Component
             $user->role_id = $this->role_id;
             if ($this->password) $user->password = $this->password;
             $user->save();
-            $this->dispatch('toast', 'Usuario actualizado');
+            $this->sendToast('orange', 'Usuario actualizado');
         } else {
             $user = User::create([
                 'name' => $this->name,
@@ -109,12 +118,13 @@ class Users extends Component
                 'role_id' => $this->role_id,
                 'status' => 'active',
             ]);
-            $this->dispatch('toast', 'Usuario creado');
+            $this->sendToast('green', 'Usuario creado');
         }
 
-    $this->resetForm();
-    $this->showForm = false;
-    $this->dispatch('refreshUsers');
+        $this->resetForm();
+        $this->showForm = false;
+        // Ensure pagination and listing update without relying on emit()
+        $this->resetPage();
     }
 
     public function toggleDelete($id)
@@ -124,16 +134,17 @@ class Users extends Component
             $user->restore();
             $user->status = 'active';
             $user->save();
-            $this->dispatch('toast', 'Usuario restaurado');
+            $this->sendToast('green', 'Usuario restaurado');
         } else {
             // mark as deleted via soft delete and status
             $user->delete();
             $user->status = 'deleted';
             $user->save();
-            $this->dispatch('toast', 'Usuario eliminado');
+            $this->sendToast('red', 'Usuario eliminado');
         }
 
-    $this->dispatch('refreshUsers');
+        // Ensure updated listing without calling emit()
+        $this->resetPage();
     }
 
     public function show($id)
@@ -151,18 +162,59 @@ class Users extends Component
     }
 
     /**
-     * Compatibility shim: some code or older runtime may call emit() or dispatch()
-     * directly on the component. Provide simple fallbacks so those calls don't
-     * throw BadMethodCallException while still producing a browser event so the
-     * front-end can react if needed.
+     * Send a toast to the frontend. Try browser event first, then Livewire
+     * emit, then session flash as a last resort.
      */
-    public function emit($event, ...$params)
+    protected function sendToast(string $type, string $message)
     {
-        // Fallback implementation that dispatches a browser event when the
-        // classic Livewire emit helper isn't available in this runtime.
-        if (method_exists($this, 'dispatchBrowserEvent')) {
-            $payload = ['params' => $params];
-            $this->dispatchBrowserEvent($event, $payload);
+        $payload = ['type' => $type, 'message' => $message];
+        try { \Log::info('Users::sendToast', $payload); } catch (\Throwable $e) {}
+
+        // Livewire v3 uses ->dispatch(event, payload), older versions use ->dispatchBrowserEvent
+        if (method_exists($this, 'dispatch') && is_callable([$this, 'dispatch'])) {
+            // prefer dispatch (v3) - send both object payload and positional args
+            $this->dispatch('toast', $payload);
+            $this->dispatch('toast', $payload['type'] ?? '', $payload['message'] ?? '');
+            $this->dispatch('showToast', $payload);
+            $this->dispatch('showToast', $payload['type'] ?? '', $payload['message'] ?? '');
+            return;
+        }
+
+        if (method_exists($this, 'dispatchBrowserEvent') && is_callable([$this, 'dispatchBrowserEvent'])) {
+            $this->dispatchBrowserEvent('toast', $payload);
+            $this->dispatchBrowserEvent('showToast', $payload);
+            return;
+        }
+
+        // Last resort: session flash (visible after full page reload)
+        session()->flash('toast', $payload);
+    }
+
+    /**
+     * Backwards-compatibility: provide a safe emit(...) method so any runtime
+     * code that calls $this->emit(...) won't throw a BadMethodCallException.
+     * This forwards the event to the browser via dispatchBrowserEvent with the
+     * event name as first argument and the rest as payload.
+     */
+    public function emit(...$params)
+    {
+        if (empty($params)) {
+            return null;
+        }
+
+        $event = array_shift($params);
+        $payload = null;
+        if (count($params) === 1) {
+            $payload = $params[0];
+        } elseif (count($params) > 1) {
+            $payload = $params;
+        }
+
+        // Prefer Livewire v3 'dispatch', then 'dispatchBrowserEvent'
+        if (method_exists($this, 'dispatch') && is_callable([$this, 'dispatch'])) {
+            $this->dispatch($event, $payload ?? []);
+        } elseif (method_exists($this, 'dispatchBrowserEvent') && is_callable([$this, 'dispatchBrowserEvent'])) {
+            $this->dispatchBrowserEvent($event, $payload ?? []);
         }
 
         return null;

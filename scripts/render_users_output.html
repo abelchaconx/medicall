@@ -1,4 +1,5 @@
-<div class="space-y-4">
+<div>
+    <div class="space-y-4">
     <div class="flex items-center justify-between">
         <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Gestion de Usuarios</h2>
 
@@ -7,11 +8,47 @@
             <button wire:click="performSearch" wire:loading.attr="disabled" wire:target="performSearch" class="bg-gray-200 px-3 py-2 rounded">Buscar</button>
             <span wire:loading wire:target="performSearch" class="ml-2 text-sm text-gray-600 dark:text-gray-400">Buscando...</span>
             <button wire:click="create" wire:loading.attr="disabled" wire:target="create" class="text-white px-3 py-2 rounded bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 transition">Nuevo usuario</button>
+            <button type="button" onclick="window.dispatchEvent(new CustomEvent('showToast',{detail:{type:'green',message:'Toast de prueba (cliente)'}}))" class="ml-2 bg-gray-200 px-3 py-2 rounded">Probar toast</button>
         </div>
     </div>
 
     <div x-data class="">
         </div>
+
+    <!-- Snackbar / Toast container (placed between form and table) -->
+    <div x-data="{
+    show: false,
+    message: '',
+    color: 'bg-green-500',
+    timer: null,
+    open(payload) {
+        this.message = payload.message || '';
+        const type = payload.type || 'green';
+        if (type === 'red') this.color = 'bg-red-500';
+        else if (type === 'orange') this.color = 'bg-orange-500';
+        else this.color = 'bg-green-500';
+        this.show = true;
+        clearTimeout(this.timer);
+        this.timer = setTimeout(() => this.show = false, 3500);
+    }
+}"
+     x-init="
+         window.addEventListener('toast', e => open(e.detail));
+         // Support both 'toast' and 'showToast' events — some codepaths use one or the other
+         window.addEventListener('showToast', e => open(e.detail));
+         if (window.Livewire && typeof Livewire.on === 'function') {
+             Livewire.on('toast', payload => open(payload));
+             Livewire.on('showToast', payload => open(payload));
+         }
+         // If server flashed a toast via session(), show it on initial render
+              "
+     class="w-full mb-4 pointer-events-none z-50">
+        <div x-show="show" x-transition class="pointer-events-auto">
+            <div :class="color + ' text-white px-4 py-2 rounded shadow-lg w-full max-w-2xl mx-auto'">
+                <div x-text="message"></div>
+            </div>
+        </div>
+    </div>
 
     <div class="bg-white border rounded dark:bg-gray-900 dark:border-gray-700">
         <table class="w-full table-auto text-gray-900 dark:text-gray-100">
@@ -27,41 +64,64 @@
             </thead>
             <tbody>
                                     <tr class="border-t dark:border-gray-700">
-                        <td class="px-3 py-2">22</td>
-                        <td class="px-3 py-2">Usuario 20</td>
-                        <td class="px-3 py-2">u20@gmail.com</td>
+                        <td class="px-3 py-2">24</td>
+                        <td class="px-3 py-2">dfgdfg</td>
+                        <td class="px-3 py-2">u19@gmdeail.ce</td>
                         <td class="px-3 py-2"></td>
                         <td class="px-3 py-2">active</td>
                         <td class="px-3 py-2">
-                            <!-- Show button: blue gradient -->
-                            <button
-                                wire:click="show(22)"
-                                wire:loading.attr="disabled"
-                                wire:target="show"
-                                class="text-sm mr-2 px-3 py-1 rounded text-white bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 transition"
-                                aria-label="Ver usuario 22"
-                            >
-                                Ver
-                            </button>
+                            
 
                             <!-- Edit button: yellow gradient -->
                             <button
-                                wire:click="edit(22)"
+                                wire:click="edit(24)"
                                 wire:loading.attr="disabled"
                                 wire:target="edit"
                                 class="text-sm mr-2 px-3 py-1 rounded text-white bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 transition"
-                                aria-label="Editar usuario 22"
+                                aria-label="Editar usuario 24"
                             >
                                 Editar
                             </button>
 
                             <!-- Delete / Restore button: red for delete, green for restore -->
                                                             <button
-                                    wire:click="toggleDelete(22)"
+                                    wire:click="toggleDelete(24)"
                                     wire:loading.attr="disabled"
                                     wire:target="toggleDelete"
                                     class="text-sm px-3 py-1 rounded text-white bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 transition"
-                                    aria-label="Eliminar usuario 22"
+                                    aria-label="Eliminar usuario 24"
+                                >
+                                    Eliminar
+                                </button>
+                                                    </td>
+                    </tr>
+                                    <tr class="border-t dark:border-gray-700">
+                        <td class="px-3 py-2">23</td>
+                        <td class="px-3 py-2">dsdsd</td>
+                        <td class="px-3 py-2">u19@gmail.ce</td>
+                        <td class="px-3 py-2"></td>
+                        <td class="px-3 py-2">active</td>
+                        <td class="px-3 py-2">
+                            
+
+                            <!-- Edit button: yellow gradient -->
+                            <button
+                                wire:click="edit(23)"
+                                wire:loading.attr="disabled"
+                                wire:target="edit"
+                                class="text-sm mr-2 px-3 py-1 rounded text-white bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 transition"
+                                aria-label="Editar usuario 23"
+                            >
+                                Editar
+                            </button>
+
+                            <!-- Delete / Restore button: red for delete, green for restore -->
+                                                            <button
+                                    wire:click="toggleDelete(23)"
+                                    wire:loading.attr="disabled"
+                                    wire:target="toggleDelete"
+                                    class="text-sm px-3 py-1 rounded text-white bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 transition"
+                                    aria-label="Eliminar usuario 23"
                                 >
                                     Eliminar
                                 </button>
@@ -74,16 +134,7 @@
                         <td class="px-3 py-2"></td>
                         <td class="px-3 py-2">active</td>
                         <td class="px-3 py-2">
-                            <!-- Show button: blue gradient -->
-                            <button
-                                wire:click="show(21)"
-                                wire:loading.attr="disabled"
-                                wire:target="show"
-                                class="text-sm mr-2 px-3 py-1 rounded text-white bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 transition"
-                                aria-label="Ver usuario 21"
-                            >
-                                Ver
-                            </button>
+                            
 
                             <!-- Edit button: yellow gradient -->
                             <button
@@ -115,16 +166,7 @@
                         <td class="px-3 py-2"></td>
                         <td class="px-3 py-2">active</td>
                         <td class="px-3 py-2">
-                            <!-- Show button: blue gradient -->
-                            <button
-                                wire:click="show(20)"
-                                wire:loading.attr="disabled"
-                                wire:target="show"
-                                class="text-sm mr-2 px-3 py-1 rounded text-white bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 transition"
-                                aria-label="Ver usuario 20"
-                            >
-                                Ver
-                            </button>
+                            
 
                             <!-- Edit button: yellow gradient -->
                             <button
@@ -150,63 +192,13 @@
                                                     </td>
                     </tr>
                                     <tr class="border-t dark:border-gray-700">
-                        <td class="px-3 py-2">19</td>
-                        <td class="px-3 py-2">Usuario 17</td>
-                        <td class="px-3 py-2">u17@gmail.com</td>
-                        <td class="px-3 py-2"></td>
-                        <td class="px-3 py-2">active</td>
-                        <td class="px-3 py-2">
-                            <!-- Show button: blue gradient -->
-                            <button
-                                wire:click="show(19)"
-                                wire:loading.attr="disabled"
-                                wire:target="show"
-                                class="text-sm mr-2 px-3 py-1 rounded text-white bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 transition"
-                                aria-label="Ver usuario 19"
-                            >
-                                Ver
-                            </button>
-
-                            <!-- Edit button: yellow gradient -->
-                            <button
-                                wire:click="edit(19)"
-                                wire:loading.attr="disabled"
-                                wire:target="edit"
-                                class="text-sm mr-2 px-3 py-1 rounded text-white bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 transition"
-                                aria-label="Editar usuario 19"
-                            >
-                                Editar
-                            </button>
-
-                            <!-- Delete / Restore button: red for delete, green for restore -->
-                                                            <button
-                                    wire:click="toggleDelete(19)"
-                                    wire:loading.attr="disabled"
-                                    wire:target="toggleDelete"
-                                    class="text-sm px-3 py-1 rounded text-white bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 transition"
-                                    aria-label="Eliminar usuario 19"
-                                >
-                                    Eliminar
-                                </button>
-                                                    </td>
-                    </tr>
-                                    <tr class="border-t dark:border-gray-700">
                         <td class="px-3 py-2">18</td>
                         <td class="px-3 py-2">Usuario 16</td>
                         <td class="px-3 py-2">u16@gmail.com</td>
                         <td class="px-3 py-2"></td>
                         <td class="px-3 py-2">active</td>
                         <td class="px-3 py-2">
-                            <!-- Show button: blue gradient -->
-                            <button
-                                wire:click="show(18)"
-                                wire:loading.attr="disabled"
-                                wire:target="show"
-                                class="text-sm mr-2 px-3 py-1 rounded text-white bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 transition"
-                                aria-label="Ver usuario 18"
-                            >
-                                Ver
-                            </button>
+                            
 
                             <!-- Edit button: yellow gradient -->
                             <button
@@ -232,104 +224,13 @@
                                                     </td>
                     </tr>
                                     <tr class="border-t dark:border-gray-700">
-                        <td class="px-3 py-2">17</td>
-                        <td class="px-3 py-2">Usuario 15</td>
-                        <td class="px-3 py-2">u15@gmail.com</td>
-                        <td class="px-3 py-2"></td>
-                        <td class="px-3 py-2">active</td>
-                        <td class="px-3 py-2">
-                            <!-- Show button: blue gradient -->
-                            <button
-                                wire:click="show(17)"
-                                wire:loading.attr="disabled"
-                                wire:target="show"
-                                class="text-sm mr-2 px-3 py-1 rounded text-white bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 transition"
-                                aria-label="Ver usuario 17"
-                            >
-                                Ver
-                            </button>
-
-                            <!-- Edit button: yellow gradient -->
-                            <button
-                                wire:click="edit(17)"
-                                wire:loading.attr="disabled"
-                                wire:target="edit"
-                                class="text-sm mr-2 px-3 py-1 rounded text-white bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 transition"
-                                aria-label="Editar usuario 17"
-                            >
-                                Editar
-                            </button>
-
-                            <!-- Delete / Restore button: red for delete, green for restore -->
-                                                            <button
-                                    wire:click="toggleDelete(17)"
-                                    wire:loading.attr="disabled"
-                                    wire:target="toggleDelete"
-                                    class="text-sm px-3 py-1 rounded text-white bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 transition"
-                                    aria-label="Eliminar usuario 17"
-                                >
-                                    Eliminar
-                                </button>
-                                                    </td>
-                    </tr>
-                                    <tr class="border-t dark:border-gray-700">
-                        <td class="px-3 py-2">16</td>
-                        <td class="px-3 py-2">Usuario 14</td>
-                        <td class="px-3 py-2">u14@gmail.com</td>
-                        <td class="px-3 py-2"></td>
-                        <td class="px-3 py-2">active</td>
-                        <td class="px-3 py-2">
-                            <!-- Show button: blue gradient -->
-                            <button
-                                wire:click="show(16)"
-                                wire:loading.attr="disabled"
-                                wire:target="show"
-                                class="text-sm mr-2 px-3 py-1 rounded text-white bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 transition"
-                                aria-label="Ver usuario 16"
-                            >
-                                Ver
-                            </button>
-
-                            <!-- Edit button: yellow gradient -->
-                            <button
-                                wire:click="edit(16)"
-                                wire:loading.attr="disabled"
-                                wire:target="edit"
-                                class="text-sm mr-2 px-3 py-1 rounded text-white bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 transition"
-                                aria-label="Editar usuario 16"
-                            >
-                                Editar
-                            </button>
-
-                            <!-- Delete / Restore button: red for delete, green for restore -->
-                                                            <button
-                                    wire:click="toggleDelete(16)"
-                                    wire:loading.attr="disabled"
-                                    wire:target="toggleDelete"
-                                    class="text-sm px-3 py-1 rounded text-white bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 transition"
-                                    aria-label="Eliminar usuario 16"
-                                >
-                                    Eliminar
-                                </button>
-                                                    </td>
-                    </tr>
-                                    <tr class="border-t dark:border-gray-700">
                         <td class="px-3 py-2">14</td>
                         <td class="px-3 py-2">Usuario 12</td>
                         <td class="px-3 py-2">u12@gmail.com</td>
                         <td class="px-3 py-2"></td>
                         <td class="px-3 py-2">active</td>
                         <td class="px-3 py-2">
-                            <!-- Show button: blue gradient -->
-                            <button
-                                wire:click="show(14)"
-                                wire:loading.attr="disabled"
-                                wire:target="show"
-                                class="text-sm mr-2 px-3 py-1 rounded text-white bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 transition"
-                                aria-label="Ver usuario 14"
-                            >
-                                Ver
-                            </button>
+                            
 
                             <!-- Edit button: yellow gradient -->
                             <button
@@ -361,16 +262,7 @@
                         <td class="px-3 py-2"></td>
                         <td class="px-3 py-2">active</td>
                         <td class="px-3 py-2">
-                            <!-- Show button: blue gradient -->
-                            <button
-                                wire:click="show(13)"
-                                wire:loading.attr="disabled"
-                                wire:target="show"
-                                class="text-sm mr-2 px-3 py-1 rounded text-white bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 transition"
-                                aria-label="Ver usuario 13"
-                            >
-                                Ver
-                            </button>
+                            
 
                             <!-- Edit button: yellow gradient -->
                             <button
@@ -396,41 +288,96 @@
                                                     </td>
                     </tr>
                                     <tr class="border-t dark:border-gray-700">
-                        <td class="px-3 py-2">12</td>
-                        <td class="px-3 py-2">Usuario 10</td>
-                        <td class="px-3 py-2">u10@gmail.com</td>
+                        <td class="px-3 py-2">11</td>
+                        <td class="px-3 py-2">Usuario 9</td>
+                        <td class="px-3 py-2">u9@gmail.com</td>
                         <td class="px-3 py-2"></td>
                         <td class="px-3 py-2">active</td>
                         <td class="px-3 py-2">
-                            <!-- Show button: blue gradient -->
-                            <button
-                                wire:click="show(12)"
-                                wire:loading.attr="disabled"
-                                wire:target="show"
-                                class="text-sm mr-2 px-3 py-1 rounded text-white bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 transition"
-                                aria-label="Ver usuario 12"
-                            >
-                                Ver
-                            </button>
+                            
 
                             <!-- Edit button: yellow gradient -->
                             <button
-                                wire:click="edit(12)"
+                                wire:click="edit(11)"
                                 wire:loading.attr="disabled"
                                 wire:target="edit"
                                 class="text-sm mr-2 px-3 py-1 rounded text-white bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 transition"
-                                aria-label="Editar usuario 12"
+                                aria-label="Editar usuario 11"
                             >
                                 Editar
                             </button>
 
                             <!-- Delete / Restore button: red for delete, green for restore -->
                                                             <button
-                                    wire:click="toggleDelete(12)"
+                                    wire:click="toggleDelete(11)"
                                     wire:loading.attr="disabled"
                                     wire:target="toggleDelete"
                                     class="text-sm px-3 py-1 rounded text-white bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 transition"
-                                    aria-label="Eliminar usuario 12"
+                                    aria-label="Eliminar usuario 11"
+                                >
+                                    Eliminar
+                                </button>
+                                                    </td>
+                    </tr>
+                                    <tr class="border-t dark:border-gray-700">
+                        <td class="px-3 py-2">10</td>
+                        <td class="px-3 py-2">Usuario 8</td>
+                        <td class="px-3 py-2">u8@gmail.com</td>
+                        <td class="px-3 py-2"></td>
+                        <td class="px-3 py-2">active</td>
+                        <td class="px-3 py-2">
+                            
+
+                            <!-- Edit button: yellow gradient -->
+                            <button
+                                wire:click="edit(10)"
+                                wire:loading.attr="disabled"
+                                wire:target="edit"
+                                class="text-sm mr-2 px-3 py-1 rounded text-white bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 transition"
+                                aria-label="Editar usuario 10"
+                            >
+                                Editar
+                            </button>
+
+                            <!-- Delete / Restore button: red for delete, green for restore -->
+                                                            <button
+                                    wire:click="toggleDelete(10)"
+                                    wire:loading.attr="disabled"
+                                    wire:target="toggleDelete"
+                                    class="text-sm px-3 py-1 rounded text-white bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 transition"
+                                    aria-label="Eliminar usuario 10"
+                                >
+                                    Eliminar
+                                </button>
+                                                    </td>
+                    </tr>
+                                    <tr class="border-t dark:border-gray-700">
+                        <td class="px-3 py-2">9</td>
+                        <td class="px-3 py-2">Usuario 7</td>
+                        <td class="px-3 py-2">u7@gmail.com</td>
+                        <td class="px-3 py-2"></td>
+                        <td class="px-3 py-2">active</td>
+                        <td class="px-3 py-2">
+                            
+
+                            <!-- Edit button: yellow gradient -->
+                            <button
+                                wire:click="edit(9)"
+                                wire:loading.attr="disabled"
+                                wire:target="edit"
+                                class="text-sm mr-2 px-3 py-1 rounded text-white bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 transition"
+                                aria-label="Editar usuario 9"
+                            >
+                                Editar
+                            </button>
+
+                            <!-- Delete / Restore button: red for delete, green for restore -->
+                                                            <button
+                                    wire:click="toggleDelete(9)"
+                                    wire:loading.attr="disabled"
+                                    wire:target="toggleDelete"
+                                    class="text-sm px-3 py-1 rounded text-white bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 transition"
+                                    aria-label="Eliminar usuario 9"
                                 >
                                     Eliminar
                                 </button>
@@ -459,7 +406,7 @@
                         to
                         <span class="font-medium">10</span>
                                         of
-                    <span class="font-medium">21</span>
+                    <span class="font-medium">18</span>
                     results
                 </p>
             </div>
@@ -485,9 +432,6 @@
                                                                                                                                 <a href="http://medicall.test?page=2" class="relative inline-flex items-center px-4 py-2 -ml-px text-sm font-medium text-gray-700 bg-white border border-gray-300 leading-5 hover:text-gray-500 focus:z-10 focus:outline-none focus:ring ring-gray-300 focus:border-blue-300 active:bg-gray-100 active:text-gray-700 transition ease-in-out duration-150 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-400 dark:hover:text-gray-300 dark:active:bg-gray-700 dark:focus:border-blue-800" aria-label="Go to page 2">
                                         2
                                     </a>
-                                                                                                                                <a href="http://medicall.test?page=3" class="relative inline-flex items-center px-4 py-2 -ml-px text-sm font-medium text-gray-700 bg-white border border-gray-300 leading-5 hover:text-gray-500 focus:z-10 focus:outline-none focus:ring ring-gray-300 focus:border-blue-300 active:bg-gray-100 active:text-gray-700 transition ease-in-out duration-150 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-400 dark:hover:text-gray-300 dark:active:bg-gray-700 dark:focus:border-blue-800" aria-label="Go to page 3">
-                                        3
-                                    </a>
                                                                                                         
                     
                                             <a href="http://medicall.test?page=2" rel="next" class="relative inline-flex items-center px-2 py-2 -ml-px text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-r-md leading-5 hover:text-gray-400 focus:z-10 focus:outline-none focus:ring ring-gray-300 focus:border-blue-300 active:bg-gray-100 active:text-gray-500 transition ease-in-out duration-150 dark:bg-gray-800 dark:border-gray-600 dark:active:bg-gray-700 dark:focus:border-blue-800" aria-label="Next &amp;raquo;">
@@ -502,4 +446,6 @@
 
         </div>
     </div>
+    </div>
+
 </div>
