@@ -8,8 +8,8 @@
             <div class="col-span-1 hidden sm:block"></div>
             <div class="col-span-1 flex justify-center sm:justify-end">
                 <div class="flex w-full gap-2">
-                    <button wire:click="create" class="flex-1 text-white px-4 py-2 rounded h-10 bg-gradient-to-r from-green-500 to-green-600">Nuevo cita</button>
-                    <a href="{{ route('appointments.trashed') }}" class="flex-1 inline-flex items-center justify-center bg-gray-700 text-white px-4 py-2 rounded h-10">Eliminados</a>
+                    <button wire:click="create" class="flex-1 text-white px-4 py-2 rounded h-10 bg-gradient-to-r from-green-500 to-green-600 hover:opacity-95 shadow-sm">Nuevo cita</button>
+                    <a href="{{ route('appointments.trashed') }}" class="flex-1 inline-flex items-center justify-center bg-gray-700 text-white px-4 py-2 rounded h-10 hover:bg-gray-800">Eliminados</a>
                 </div>
             </div>
         </div>
@@ -19,12 +19,12 @@
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 items-center">
             <div class="col-span-1 hidden sm:block"></div>
             <div class="col-span-1">
-                <input wire:model.defer="search" type="text" placeholder="Buscar..." class="border rounded px-3 py-2 w-full bg-white dark:bg-gray-900 dark:text-gray-200" />
+                <input wire:model.defer="search" type="text" placeholder="Buscar..." class="border rounded px-3 py-2 w-full bg-white dark:bg-gray-900 dark:text-gray-200 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-900" />
             </div>
             <div class="col-span-1 flex justify-center sm:justify-end">
                 <div class="flex gap-2 w-full">
-                    <button wire:click="performSearch" class="flex-1 text-white px-4 py-2 rounded h-10 bg-blue-600">Buscar</button>
-                    <button wire:click="clearSearch" class="flex-1 bg-gray-700 text-white px-4 py-2 rounded h-10">Limpiar</button>
+                    <button wire:click="performSearch" class="flex-1 text-white px-4 py-2 rounded h-10 bg-blue-600 hover:bg-blue-700">Buscar</button>
+                    <button wire:click="clearSearch" class="flex-1 bg-gray-700 text-white px-4 py-2 rounded h-10 hover:bg-gray-800">Limpiar</button>
                 </div>
             </div>
         </div>
@@ -95,34 +95,40 @@
             <div class="p-4 border rounded bg-white dark:bg-gray-800 mb-4">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {{-- Col 1: Select2 + calendario (siempre visible) --}}
-                    <div>
-                        <label class="block text-sm font-medium mb-2">1. Buscar consultorio (doctor - consultorio)</label>
+                            <div>
+                                <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-200">1. Buscar consultorio (doctor - consultorio)</label>
                         {{-- Custom dropdown with integrated search input --}}
                         <div class="relative" id="doctor-dropdown-root">
-                            <button type="button" id="doctor-dropdown-button" onclick="toggleDoctorDropdown(event)" class="w-full text-left mt-1 border rounded px-2 py-2 bg-white dark:bg-gray-900 dark:text-gray-200">
+                            <!-- Hidden input bound to Livewire so JS can set value reliably regardless of client API -->
+                            <input id="doctor-medicaloffice-hidden" type="hidden" wire:model="doctor_medicaloffice_id" />
+                            <button type="button" id="doctor-dropdown-button" onclick="toggleDoctorDropdown(event)" class="w-full text-left mt-1 border rounded px-2 py-2 bg-white dark:bg-gray-900 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-800">
                                 <span id="doctor-dropdown-selected">{{ $availableDoctorMedicalOffices[$doctor_medicaloffice_id] ?? '-- Selecciona consultorio --' }}</span>
                             </button>
 
                             <div id="doctor-dropdown" class="absolute z-40 left-0 right-0 mt-1 bg-white dark:bg-gray-800 border rounded shadow-lg hidden">
                                 <div class="p-2 relative">
-                                    <input id="doctor-dropdown-input" wire:model.debounce.150ms="consultorio_search" type="text" placeholder="Escribe 3+ letras para buscar" class="w-full border rounded px-2 py-1 pr-8 bg-white dark:bg-gray-900 dark:text-gray-200 text-sm" onkeydown="event.stopPropagation()" oninput="doctorDropdownInputChanged(this.value)" />
-                                    <button type="button" id="doctor-dropdown-clear" onclick="clearDoctorDropdownFilter()" title="Limpiar" class="hidden absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">&times;</button>
+                                    <input id="doctor-dropdown-input" wire:model.debounce.150ms="consultorio_search" type="text" placeholder="Escribe 3+ letras para buscar" class="w-full border rounded px-2 py-1 pr-8 bg-white dark:bg-gray-900 dark:text-gray-200 text-sm placeholder-gray-500 dark:placeholder-gray-400" onkeydown="event.stopPropagation()" oninput="doctorDropdownInputChanged(this.value)" />
+                                    <button type="button" id="doctor-dropdown-clear" onclick="clearDoctorDropdownFilter()" title="Limpiar" aria-label="Limpiar búsqueda" class="hidden absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-gray-300 dark:hover:text-white p-1 rounded focus:outline-none focus:ring-2 focus:ring-blue-300">
+                                        <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="none" stroke="currentColor" aria-hidden="true">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 6l8 8M14 6l-8 8" />
+                                        </svg>
+                                    </button>
                                 </div>
-                                <div class="max-h-48 overflow-auto divide-y">
+                                <div class="max-h-48 overflow-auto divide-y text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800">
                                     @if(! $consultorio_search || strlen(trim($consultorio_search)) < 3)
                                         <!-- <div class="p-3 text-sm text-gray-500">Escribe 3 o más letras para filtrar resultados.</div> -->
                                         @if(!empty($availableDoctorMedicalOffices))
                                             <!-- <div class="p-2 text-xs text-gray-400">O selecciona uno de los recientes:</div> -->
-                                            @foreach(array_slice($availableDoctorMedicalOffices->toArray(), 0, 8) as $id => $label)
-                                                <div class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer" onclick="selectDoctorPlace({{ $id }})">{{ $label }}</div>
+                                            @foreach(array_slice($availableDoctorMedicalOffices->toArray(), 0, 8, true) as $id => $label)
+                                                <div class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-gray-800 dark:text-gray-100" onclick="selectDoctorPlace({{ $id }})">{{ $label }}</div>
                                             @endforeach
                                         @endif
                                     @else
                                         @if(count($availableDoctorMedicalOffices) === 0)
-                                            <div class="p-3 text-sm text-gray-500">No se encontraron coincidencias.</div>
+                                            <div class="p-3 text-sm text-gray-500 dark:text-gray-400">No se encontraron coincidencias.</div>
                                         @else
                                             @foreach($availableDoctorMedicalOffices as $id => $label)
-                                                <div class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer" onclick="selectDoctorPlace({{ $id }})">{{ $label }}</div>
+                                                <div class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-gray-800 dark:text-gray-100" onclick="selectDoctorPlace({{ $id }})">{{ $label }}</div>
                                             @endforeach
                                         @endif
                                     @endif
@@ -137,13 +143,13 @@
                         {{-- Calendario solo visible si hay consultorio seleccionado --}}
                         @if($doctor_medicaloffice_id)
                             <div class="mt-3 p-2 bg-white dark:bg-gray-800 rounded border">
-                                <h4 class="text-sm font-medium mb-2">2. Seleccionar fecha</h4>
+                                <h4 class="text-sm font-medium mb-2 text-gray-700 dark:text-gray-200">2. Seleccionar fecha</h4>
                                 <div class="flex items-center justify-between mb-2">
                                     <div class="flex gap-2">
-                                        <button wire:click="prevMonth" class="px-2 py-1 border rounded">&lt;</button>
-                                        <button wire:click="nextMonth" class="px-2 py-1 border rounded">&gt;</button>
+                                        <button wire:click="prevMonth" class="px-2 py-1 border rounded bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200">&lt;</button>
+                                        <button wire:click="nextMonth" class="px-2 py-1 border rounded bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200">&gt;</button>
                                     </div>
-                                    <div class="font-semibold text-sm">{{ \Carbon\Carbon::parse($calendarMonth)->format('F Y') }}</div>
+                                    <div class="font-semibold text-sm text-gray-700 dark:text-gray-200">{{ \Carbon\Carbon::parse($calendarMonth)->format('F Y') }}</div>
                                 </div>
                                 <div class="grid grid-cols-7 gap-1 text-xs">
                                     @foreach(['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'] as $d)
@@ -196,7 +202,7 @@
                                                     }
                                                 @endphp
                                             <div class="{{ $dayClass }}" wire:click="selectDate('{{ $day }}')">
-                                                <div>{{ \Carbon\Carbon::parse($day)->format('j') }}</div>
+                                                <div class="text-gray-800 dark:text-gray-100">{{ \Carbon\Carbon::parse($day)->format('j') }}</div>
                                             </div>
                                         @endif
                                     @endforeach
@@ -215,12 +221,12 @@
                             <div class="p-3 bg-white dark:bg-gray-800 rounded border">
                                 <h3 class="font-semibold mb-2">3. Disponibles para {{ \Carbon\Carbon::parse($selected_date)->format('d/m/Y') }}</h3>
                                 @if(empty($available_hours))
-                                    <div class="text-sm text-gray-500">No hay horas disponibles para esta fecha.</div>
+                                    <div class="text-sm text-gray-500 dark:text-gray-400">No hay horas disponibles para esta fecha.</div>
                                 @else
                                     <div class="grid grid-cols-2 gap-2">
                                         @foreach($available_hours as $slot)
                                             <button wire:click="selectTimeSlot('{{ $slot['start'] }}', {{ $slot['schedule_id'] ?? 'null' }})"
-                                                    class="px-2 py-1 bg-green-100 hover:bg-green-200 rounded text-sm transition-colors">
+                                                    class="px-2 py-1 bg-green-100 dark:bg-green-900 hover:bg-green-200 dark:hover:bg-green-800 rounded text-sm transition-colors text-gray-800 dark:text-gray-100">
                                                 {{ $slot['start'] }} - {{ $slot['end'] }}
                                             </button>
                                         @endforeach
@@ -310,11 +316,15 @@
             </thead>
             <tbody class="md:table-row-group">
                 @forelse($items as $item)
-                    <tr class="block md:table-row mb-3 md:mb-0 bg-white dark:bg-gray-800 rounded-lg md:rounded-none shadow-sm md:shadow-none overflow-hidden">
-                        <td class="px-3 py-1">{{ $item->patient?->name ?? ($item->patient_id ? 'Paciente #' . $item->patient_id : '—') }}</td>
+                    @php
+                        $turnRow = $appointmentTurns[$item->id] ?? null;
+                        $rowHighlight = ($turnRow === 1) ? 'bg-green-50 dark:bg-green-700' : 'bg-white dark:bg-gray-800';
+                    @endphp
+                    <tr class="block md:table-row mb-3 md:mb-0 {{ $rowHighlight }} rounded-lg md:rounded-none shadow-sm md:shadow-none overflow-hidden">
+                        <td class="px-3 py-1 text-gray-800 dark:text-gray-100">{{ $item->patient?->name ?? ($item->patient_id ? 'Paciente #' . $item->patient_id : '—') }}</td>
                         <td class="px-3 py-1">
-                            <div class="text-sm">{{ $item->doctorMedicalOffice?->doctor?->user?->name ?? '—' }}</div>
-                            <div class="text-xs text-gray-500 mt-1">
+                            <div class="text-sm text-gray-800 dark:text-gray-100">{{ $item->doctorMedicalOffice?->doctor?->user?->name ?? '—' }}</div>
+                            <div class="text-xs text-gray-600 dark:text-gray-400 mt-1">
                                 @php $office = $item->doctorMedicalOffice?->medicalOffice; @endphp
                                 @if($office)
                                     <a href="{{ route('medical-offices.show', $office->id) }}?ajax=1" class="hover:underline consultorio-link" data-id="{{ $office->id }}">{{ $office->name }}</a>
@@ -323,9 +333,15 @@
                                 @endif
                             </div>
                         </td>
-                        <td class="px-3 py-1">{{ $item->start_datetime ? $item->start_datetime->format('d/m/Y H:i') : '—' }}@if($item->end_datetime) - {{ $item->end_datetime->format('H:i') }}@endif
-                            <div class="text-xs text-gray-500 mt-1">@if($item->schedule) Horario: {{ $item->schedule->start_time }} - {{ $item->schedule->end_time }} @endif</div>
-                        </td>
+                        <td class="px-3 py-1 text-gray-800 dark:text-gray-100">
+                                    @php
+                                        $turn = $appointmentTurns[$item->id] ?? null;
+                                    @endphp
+                                    @php $total = $appointmentTotals[$item->id] ?? null; @endphp
+                                    <div class="font-semibold">@if($turn && $total) Cita #{{ $turn }} de {{ $total }} @elseif($turn) Cita #{{ $turn }} @else Cita @endif</div>
+                                    <div class="text-sm text-gray-700 dark:text-gray-200 mt-1">{{ $item->start_datetime ? \Carbon\Carbon::parse($item->start_datetime)->format('d/m/Y') : '—' }}</div>
+                                    <div class="text-xs text-gray-600 dark:text-gray-400 mt-1">{{ $item->start_datetime ? \Carbon\Carbon::parse($item->start_datetime)->format('H:i') : '—' }}@if($item->end_datetime) - {{ \Carbon\Carbon::parse($item->end_datetime)->format('H:i') }}@endif</div>
+                                </td>
                         <td class="px-3 py-1">
                             <div class="flex gap-2">
                                 <button wire:click="edit({{ $item->id ?? 0 }})" class="px-2 py-1 bg-yellow-400 text-white rounded">Editar</button>
@@ -401,9 +417,63 @@
     }
 
     function selectDoctorPlace(id) {
+        console.log('[diag] selectDoctorPlace called', id);
+        // try to set the visible selected label immediately by finding the option element's text
+        try {
+            var selEl = document.querySelector('#doctor-dropdown [onclick="selectDoctorPlace(' + id + ')"]');
+            if (!selEl) {
+                // try without quotes (numeric)
+                selEl = document.querySelector('#doctor-dropdown [onclick="selectDoctorPlace(' + id + ')"]');
+            }
+            if (selEl) {
+                var selLabel = selEl.textContent && selEl.textContent.trim();
+                if (selLabel) {
+                    var display = document.getElementById('doctor-dropdown-selected');
+                    if (display) display.textContent = selLabel;
+                }
+            }
+        } catch(e) { console.warn('[diag] error setting immediate label', e); }
+
         // call Livewire method to set selection
         if (window.Livewire) {
-            Livewire.emit('doctorPlaceSelected', id);
+            try {
+                if (typeof Livewire.emit === 'function') {
+                    Livewire.emit('doctorPlaceSelected', id);
+                } else {
+                    // attempt to find the nearest Livewire component and call the method directly
+                    var ddRoot = document.getElementById('doctor-dropdown-root');
+                    var livewireEl = (ddRoot && typeof ddRoot.closest === 'function') ? ddRoot.closest('[wire\\:id]') : document.querySelector('[wire\\:id]');
+                    var cid = null;
+                    if (livewireEl) cid = livewireEl.getAttribute('wire:id') || livewireEl.getAttribute('wire\\:id');
+                    if (cid && typeof Livewire.find === 'function') {
+                        try {
+                            var comp = Livewire.find(cid);
+                            if (comp && typeof comp.call === 'function') {
+                                comp.call('doctorPlaceSelected', id);
+                            } else if (comp && typeof comp.set === 'function') {
+                                // last resort: set a property that the component listens to
+                                comp.set('doctor_medicaloffice_id', id);
+                            } else {
+                                throw new Error('Livewire component methods unavailable');
+                            }
+                        } catch (e) {
+                            console.warn('[diag] Livewire.find call failed', e);
+                            // fallback to ajax label fetch below
+                            throw e;
+                        }
+                    } else {
+                        throw new Error('Livewire.emit and Livewire.find not available');
+                    }
+                }
+            } catch (e) {
+                // fallback: get label for id via simple endpoint
+                fetch('/ajax/doctor-places/search?q=' + encodeURIComponent(id))
+                    .then(r => r.json())
+                    .then(data => {
+                        var sel = document.getElementById('doctor-dropdown-selected');
+                        if (sel) sel.textContent = (data[0] && data[0].label) || ('Consultorio #' + id);
+                    }).catch(()=>{});
+            }
         } else {
             // fallback: get label for id via simple endpoint
             fetch('/ajax/doctor-places/search?q=' + encodeURIComponent(id))
@@ -413,9 +483,26 @@
                     if (sel) sel.textContent = (data[0] && data[0].label) || ('Consultorio #' + id);
                 }).catch(()=>{});
         }
-        // close dropdown
-        var dropdown = document.getElementById('doctor-dropdown');
-        if (dropdown) dropdown.classList.add('hidden');
+        // also set hidden input value (robust fallback for Livewire syncing)
+        try {
+            var hidden = document.getElementById('doctor-medicaloffice-hidden');
+            if (hidden) {
+                hidden.value = id;
+                hidden.dispatchEvent(new Event('input', { bubbles: true }));
+                // also dispatch change event for compatibility
+                hidden.dispatchEvent(new Event('change', { bubbles: true }));
+                // diagnostic: log value after a short tick
+                setTimeout(function(){
+                    try { console.log('[diag] hidden input value after dispatch =', hidden.value); } catch(e){}
+                }, 50);
+            }
+        } catch(e){ console.warn('[diag] hidden input dispatch failed', e); }
+
+        // close dropdown after a short delay so Livewire has time to pick up the input event
+        setTimeout(function(){
+            var dropdown = document.getElementById('doctor-dropdown');
+            if (dropdown) dropdown.classList.add('hidden');
+        }, 120);
     }
 
     function doctorDropdownInputChanged(val) {

@@ -8,6 +8,7 @@ use App\Models\Patient;
 use App\Models\DoctorMedicaloffice as DoctorPlace;
 use App\Models\Schedule;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class Appointments extends Component
 {
@@ -62,7 +63,43 @@ class Appointments extends Component
             $query->where('notes', 'like', "%{$this->search}%")->orWhereHas('patient', function($q){ $q->where('name','like', "%{$this->search}%"); });
         }
 
-        $appointments = $query->latest()->paginate(12);
+    // order by doctor and start_datetime so turns are consistent per doctor/day
+    $appointments = $query->orderBy('doctor_medicaloffice_id')->orderBy('start_datetime')->paginate(12);
+
+        // Precompute 'turn' (Cita #N) for appointments shown on this page to avoid
+        // firing a DB query per row in the Blade template. The turn is the 1-based
+        // position of the appointment among appointments for the same
+        // doctor_medicaloffice and date, ordered by start_datetime.
+    $appointmentTurns = [];
+    $appointmentTotals = [];
+        try {
+            $pageItems = $appointments->items();
+            $pairs = [];
+            foreach ($pageItems as $a) {
+                if (! $a->id || ! $a->doctor_medicaloffice_id || ! $a->start_datetime) continue;
+                $date = \Carbon\Carbon::parse($a->start_datetime)->format('Y-m-d');
+                $key = $a->doctor_medicaloffice_id . '|' . $date;
+                $pairs[$key] = ['doctor' => $a->doctor_medicaloffice_id, 'date' => $date];
+            }
+
+            foreach ($pairs as $key => $meta) {
+                $rows = \App\Models\Appointment::where('doctor_medicaloffice_id', $meta['doctor'])
+                    ->whereDate('start_datetime', $meta['date'])
+                    ->orderBy('start_datetime')
+                    ->get(['id','start_datetime']);
+                $rank = 0;
+                $total = $rows->count();
+                foreach ($rows as $r) {
+                    $rank++;
+                    $appointmentTurns[$r->id] = $rank;
+                    $appointmentTotals[$r->id] = $total;
+                }
+            }
+        } catch (\Throwable $e) {
+            // on any error fallback to empty map
+            $appointmentTurns = [];
+            $appointmentTotals = [];
+        }
 
         // Patients table doesn't have a 'name' column; use related User name instead
         $availablePatients = Patient::with('user')->get()->mapWithKeys(function($p){
@@ -95,7 +132,12 @@ class Appointments extends Component
             $this->available_hours = $this->getAvailableHoursForDoctor($this->doctor_medicaloffice_id, $this->selected_date);
         }
 
-        // compute daily availability percentages for the calendar if doctor selected
+        // compute daily availability percentages for the calendar when a doctor is
+        // selected and we have a calendar month. The heavy per-day slot computation
+        // has been optimized in computeDailyAvailability to avoid calling the
+        // expensive getAvailableHoursForDoctor() on every day (which caused long
+        // delays). This provides a fast month overview (colors) while still using
+        // getAvailableHoursForDoctor() on-demand when the user selects a specific date.
         if ($this->doctor_medicaloffice_id && $this->calendarMonth) {
             $this->dailyAvailability = $this->computeDailyAvailability($this->doctor_medicaloffice_id, $this->calendarMonth);
         } else {
@@ -107,6 +149,8 @@ class Appointments extends Component
             'availablePatients' => $availablePatients,
             'availableDoctorMedicalOffices' => $availableDoctorMedicalOffices,
             'dailyAvailability' => $this->dailyAvailability,
+            'appointmentTurns' => $appointmentTurns,
+            'appointmentTotals' => $appointmentTotals,
         ]);
     }
 
@@ -124,39 +168,63 @@ class Appointments extends Component
             return $map;
         }
 
+        // Prefetch schedules valid for the month for this doctor to minimize queries
+        $schedules = \App\Models\Schedule::where('doctor_medicaloffice_id', $doctorMedicalOfficeId)
+            ->where(function($q) use ($start, $end) {
+                // schedule valid range intersects the month
+                $q->whereNull('valid_from')->orWhere('valid_from', '<=', $end->format('Y-m-d'));
+            })->where(function($q) use ($start, $end) {
+                $q->whereNull('valid_to')->orWhere('valid_to', '>=', $start->format('Y-m-d'));
+            })->get();
+
+        // Prefetch exceptions for all schedules in the month
+        $scheduleIds = $schedules->pluck('id')->all();
+        $exceptions = collect();
+        if (!empty($scheduleIds)) {
+            $exceptions = \App\Models\ScheduleException::whereIn('schedule_id', $scheduleIds)
+                ->whereBetween('date', [$start->format('Y-m-d'), $end->format('Y-m-d')])->get()
+                ->groupBy('date');
+        }
+
+        // Prefetch appointment counts per day for the month
+        $appointmentsPerDay = \App\Models\Appointment::where('doctor_medicaloffice_id', $doctorMedicalOfficeId)
+            ->whereBetween('start_datetime', [$start->format('Y-m-d').' 00:00:00', $end->format('Y-m-d').' 23:59:59'])
+            ->get()->groupBy(function($a){ return \Carbon\Carbon::parse($a->start_datetime)->format('Y-m-d'); });
+
         for ($d = $start->copy(); $d->lte($end); $d->addDay()) {
             $date = $d->format('Y-m-d');
-
-            // total potential slots (considering schedules and exceptions but not existing appointments)
             $totalSlots = 0;
-            $schedules = \App\Models\Schedule::where('doctor_medicaloffice_id', $doctorMedicalOfficeId)
-                ->where(function($q) use ($date) { $q->whereNull('valid_from')->orWhere('valid_from','<=',$date); })
-                ->where(function($q) use ($date) { $q->whereNull('valid_to')->orWhere('valid_to','>=',$date); })
-                ->get();
 
-            foreach ($schedules as $s) {
+            // filter schedules that apply to this date
+            $sForDay = $schedules->filter(function($s) use ($d) {
+                $dateStr = $d->format('Y-m-d');
+                if ($s->valid_from && $s->valid_from > $dateStr) return false;
+                if ($s->valid_to && $s->valid_to < $dateStr) return false;
                 $days = $s->weekdays_array ?? [];
+                if (!is_array($days)) $days = [];
                 $weekdayIso = (int) $d->isoWeekday();
                 $weekdayToMatch = $weekdayIso === 7 ? 0 : $weekdayIso;
-                if (empty($days) || ! in_array($weekdayToMatch, $days)) continue;
+                if (empty($days) || ! in_array($weekdayToMatch, $days)) return false;
+                return true;
+            });
 
-                // exceptions for this schedule on this date
-                $exceptions = \App\Models\ScheduleException::where('schedule_id', $s->id)->where('date', $date)->get();
-
+            // calculate total potential slots for that day
+            foreach ($sForDay as $s) {
                 $startTime = $s->start_time; $endTime = $s->end_time;
                 if (! $startTime || ! $endTime) continue;
-
                 $duration = (int) ($s->duration_minutes ?: 30);
                 $cur = \Carbon\Carbon::parse($date . ' ' . $startTime);
                 $limit = \Carbon\Carbon::parse($date . ' ' . $endTime);
+                // get exceptions for this schedule on this date
+                $exForDate = $exceptions->get($date, collect())->where('schedule_id', $s->id);
+
                 while ($cur->lt($limit)) {
                     $slotStart = $cur->format('H:i:s');
-                    $slotEnd = $cur->copy()->addMinutes($duration)->format('H:i:s');
                     if ($cur->copy()->addMinutes($duration)->gt($limit)) break;
 
-                    // check exceptions to reduce totalSlots
+                    // check exceptions for this schedule/date
                     $blocked = false;
-                    foreach ($exceptions as $ex) {
+                    foreach ($exForDate as $ex) {
                         if (empty($ex->start_time) && empty($ex->end_time)) { $blocked = true; break; }
                         if ($ex->start_time && $ex->end_time) {
                             if ($slotStart >= $ex->start_time && $slotStart < $ex->end_time) { $blocked = true; break; }
@@ -168,17 +236,23 @@ class Appointments extends Component
                 }
             }
 
-            // available slots (respecting existing appointments and exceptions) reuse existing method
-            $availableSlots = count($this->getAvailableHoursForDoctor($doctorMedicalOfficeId, $date));
+            // availableSlots: instead of calling getAvailableHoursForDoctor which queries schedules again
+            // we approximate available slots = totalSlots - bookedSlots removing full-day exceptions
+            $bookedSlots = isset($appointmentsPerDay[$date]) ? $appointmentsPerDay[$date]->count() : 0;
 
-            // booked slots = appointments count start_datetime on that date for this doctor
-            $bookedSlots = \App\Models\Appointment::where('doctor_medicaloffice_id', $doctorMedicalOfficeId)
-                ->whereDate('start_datetime', $date)
-                ->count();
+            // check if any full-day exceptions exist for this doctor on this date across schedules
+            $hasFullDayException = false;
+            foreach ($exceptions->get($date, collect()) as $exItem) {
+                // if any exception has no times, treat as full-day block
+                if (empty($exItem->start_time) && empty($exItem->end_time)) { $hasFullDayException = true; break; }
+            }
+
+            $availableSlots = $totalSlots;
+            if ($hasFullDayException) $availableSlots = 0; else $availableSlots = max(0, $totalSlots - $bookedSlots);
 
             $percent = 0;
             if ($totalSlots > 0) {
-                $percent = (int) round(max(0, $availableSlots) / $totalSlots * 100);
+                $percent = (int) round(($availableSlots) / $totalSlots * 100);
             }
 
             $map[$date] = [
@@ -186,7 +260,7 @@ class Appointments extends Component
                 'total' => $totalSlots,
                 'available' => $availableSlots,
                 'booked' => $bookedSlots,
-                'hasSchedules' => $schedules->count() > 0 && $totalSlots > 0,
+                'hasSchedules' => $sForDay->count() > 0 && $totalSlots > 0,
             ];
         }
 
@@ -395,16 +469,25 @@ class Appointments extends Component
         $weekdayIso = (int) $dt->isoWeekday();
         $weekdayToMatch = $weekdayIso === 7 ? 0 : $weekdayIso;
 
+
         // load schedules valid that day
         $schedules = \App\Models\Schedule::where('doctor_medicaloffice_id', $doctorMedicalOfficeId)
             ->where(function($q) use ($date) { $q->whereNull('valid_from')->orWhere('valid_from','<=',$date); })
             ->where(function($q) use ($date) { $q->whereNull('valid_to')->orWhere('valid_to','>=',$date); })
             ->get();
 
-        // gather occupied start datetimes for this doctor on that date
-        $existing = \App\Models\Appointment::where('doctor_medicaloffice_id', $doctorMedicalOfficeId)
+        // gather occupied start times (H:i:s) for this doctor on that date using a single DB query
+        $existing = DB::table('appointments')->where('doctor_medicaloffice_id', $doctorMedicalOfficeId)
             ->whereDate('start_datetime', $date)
-            ->pluck('start_datetime')->map(function($v){ return \Carbon\Carbon::parse($v)->format('H:i:s'); })->toArray();
+            ->pluck(DB::raw("TIME(start_datetime) as time"))->map(function($v){ return substr($v,0,8); })->toArray();
+
+        // prefetch exceptions for all schedules on this date to avoid per-schedule queries
+        $scheduleIds = $schedules->pluck('id')->filter()->values()->all();
+        $exceptionsGrouped = collect();
+        if (!empty($scheduleIds)) {
+            $exceptions = \App\Models\ScheduleException::whereIn('schedule_id', $scheduleIds)->where('date', $date)->get();
+            $exceptionsGrouped = $exceptions->groupBy('schedule_id');
+        }
 
         foreach ($schedules as $s) {
             $days = $s->weekdays_array ?? [];
@@ -416,12 +499,7 @@ class Appointments extends Component
             
             if (empty($days) || ! in_array($weekdayToMatch, $days)) continue;
 
-            if (\App\Models\ScheduleException::where('schedule_id', $s->id)->where('date', $date)->exists()) {
-                // if exception exists for that date, skip this schedule (exceptions may be partial; handled later)
-                $exceptions = \App\Models\ScheduleException::where('schedule_id', $s->id)->where('date', $date)->get();
-            } else {
-                $exceptions = collect();
-            }
+            $exceptions = $exceptionsGrouped->get($s->id, collect());
 
             $start = $s->start_time; $end = $s->end_time;
             if (! $start || ! $end) continue;
@@ -436,7 +514,7 @@ class Appointments extends Component
                 if ($cur->copy()->addMinutes($duration)->gt($limit)) break;
 
                 // skip if occupied
-                if (in_array($slotStart, $existing)) { $cur->addMinutes($duration); continue; }
+                if (in_array($slotStart, $existing, true)) { $cur->addMinutes($duration); continue; }
 
                 // skip if exception blocks this slot
                 $blocked = false;
