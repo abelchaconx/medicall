@@ -37,8 +37,10 @@ class Appointments extends Component
         'confirmAction',
         'refreshComponent' => '$refresh',
         // events from JS/select2 (Livewire v3 format)
-        'doctorPlaceSelected',
-        'patientSelected',
+    'doctorPlaceSelected',
+    'patientSelected',
+    // event-based search update from client JS
+    'consultorioSearchUpdated' => 'handleConsultorioSearchUpdated',
     ];
 
     protected $rules = [
@@ -66,11 +68,24 @@ class Appointments extends Component
         $availablePatients = Patient::with('user')->get()->mapWithKeys(function($p){
             return [$p->id => optional($p->user)->name ?? ('Paciente #' . $p->id)];
         });
-        $availableDoctorMedicalOffices = DoctorPlace::with(['doctor.user','medicalOffice'])->get()->mapWithKeys(function($dp){
+        $availableDoctorMedicalOfficesQuery = DoctorPlace::with(['doctor.user','medicalOffice']);
+        if ($this->consultorio_search && strlen(trim($this->consultorio_search)) >= 3) {
+            $term = '%' . trim($this->consultorio_search) . '%';
+            $availableDoctorMedicalOfficesQuery->whereHas('doctor.user', function($q) use ($term) { $q->where('name','like',$term); })
+                ->orWhereHas('medicalOffice', function($q) use ($term) { $q->where('name','like',$term); });
+            // limit results for performance when searching
+            $availableDoctorMedicalOffices = $availableDoctorMedicalOfficesQuery->limit(20)->get()->mapWithKeys(function($dp){
+                $doctorName = data_get($dp, 'doctor.user.name') ?? ('Doctor #'.$dp->doctor_id);
+                $placeName = data_get($dp, 'medicalOffice.name') ?? ('MedicalOffice #'.($dp->medical_office_id ?? ''));
+                return [$dp->id => $doctorName.' - '.$placeName];
+            });
+        } else {
+            $availableDoctorMedicalOffices = $availableDoctorMedicalOfficesQuery->get()->mapWithKeys(function($dp){
             $doctorName = data_get($dp, 'doctor.user.name') ?? ('Doctor #'.$dp->doctor_id);
             $placeName = data_get($dp, 'medicalOffice.name') ?? ('MedicalOffice #'.($dp->medical_office_id ?? ''));
             return [$dp->id => $doctorName.' - '.$placeName];
-        });
+            });
+        }
 
         // initialize calendar month on first render
         if (! $this->calendarMonth) $this->calendarMonth = \Carbon\Carbon::now()->startOfMonth()->format('Y-m-01');
@@ -313,6 +328,16 @@ class Appointments extends Component
     }
 
     /**
+     * Handle consultorio search events emitted from the client JS.
+     * This keeps the server-side search term in sync without requiring us to target a component id.
+     */
+    public function handleConsultorioSearchUpdated($term = '')
+    {
+        $this->consultorio_search = is_null($term) ? '' : trim($term);
+        // No need to explicitly refresh here; render() will pick up the new term on next cycle.
+    }
+
+    /**
      * Check if a doctor has any availability on a given date
      */
     public function isDoctorAvailableOnDate($doctorMedicalOfficeId, $date): bool
@@ -458,6 +483,16 @@ class Appointments extends Component
     public function updatingSearch()
     {
         $this->resetPage();
+    }
+
+    public function updatingConsultorioSearch()
+    {
+        // reset any dependent state when consultorio search changes
+        $this->resetPage();
+        // clear selected doctor to avoid stale selection
+        $this->doctor_medicaloffice_id = null;
+        $this->available_hours = [];
+        $this->selected_date = null;
     }
 
     public function create()

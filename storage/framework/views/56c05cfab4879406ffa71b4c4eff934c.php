@@ -125,12 +125,38 @@ unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
                     
                     <div>
                         <label class="block text-sm font-medium mb-2">1. Buscar consultorio (doctor - consultorio)</label>
-                        <select id="doctor-place-select" class="mt-1 block w-full border rounded px-2 py-1 bg-white dark:bg-gray-900 dark:text-gray-200" wire:model="doctor_medicaloffice_id" wire:change="selectDoctor($event.target.value)">
-                            <option value="">-- Selecciona consultorio --</option>
-                            <!--[if BLOCK]><![endif]--><?php $__currentLoopData = ($availableDoctorMedicalOffices ?? []); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $id => $label): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                <option value="<?php echo e($id); ?>"><?php echo e($label); ?></option>
-                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
-                        </select>
+                        
+                        <div class="relative" id="doctor-dropdown-root">
+                            <button type="button" id="doctor-dropdown-button" onclick="toggleDoctorDropdown(event)" class="w-full text-left mt-1 border rounded px-2 py-2 bg-white dark:bg-gray-900 dark:text-gray-200">
+                                <span id="doctor-dropdown-selected"><?php echo e($availableDoctorMedicalOffices[$doctor_medicaloffice_id] ?? '-- Selecciona consultorio --'); ?></span>
+                            </button>
+
+                            <div id="doctor-dropdown" class="absolute z-40 left-0 right-0 mt-1 bg-white dark:bg-gray-800 border rounded shadow-lg hidden">
+                                <div class="p-2 relative">
+                                    <input id="doctor-dropdown-input" wire:model.debounce.150ms="consultorio_search" type="text" placeholder="Escribe 3+ letras para buscar" class="w-full border rounded px-2 py-1 pr-8 bg-white dark:bg-gray-900 dark:text-gray-200 text-sm" onkeydown="event.stopPropagation()" oninput="doctorDropdownInputChanged(this.value)" />
+                                    <button type="button" id="doctor-dropdown-clear" onclick="clearDoctorDropdownFilter()" title="Limpiar" class="hidden absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">&times;</button>
+                                </div>
+                                <div class="max-h-48 overflow-auto divide-y">
+                                    <!--[if BLOCK]><![endif]--><?php if(! $consultorio_search || strlen(trim($consultorio_search)) < 3): ?>
+                                        <!-- <div class="p-3 text-sm text-gray-500">Escribe 3 o más letras para filtrar resultados.</div> -->
+                                        <!--[if BLOCK]><![endif]--><?php if(!empty($availableDoctorMedicalOffices)): ?>
+                                            <!-- <div class="p-2 text-xs text-gray-400">O selecciona uno de los recientes:</div> -->
+                                            <!--[if BLOCK]><![endif]--><?php $__currentLoopData = array_slice($availableDoctorMedicalOffices->toArray(), 0, 8); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $id => $label): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                                <div class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer" onclick="selectDoctorPlace(<?php echo e($id); ?>)"><?php echo e($label); ?></div>
+                                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
+                                        <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                                    <?php else: ?>
+                                        <!--[if BLOCK]><![endif]--><?php if(count($availableDoctorMedicalOffices) === 0): ?>
+                                            <div class="p-3 text-sm text-gray-500">No se encontraron coincidencias.</div>
+                                        <?php else: ?>
+                                            <!--[if BLOCK]><![endif]--><?php $__currentLoopData = $availableDoctorMedicalOffices; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $id => $label): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                                <div class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer" onclick="selectDoctorPlace(<?php echo e($id); ?>)"><?php echo e($label); ?></div>
+                                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
+                                        <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                                    <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                                </div>
+                            </div>
+                        </div>
 
                         
 
@@ -372,4 +398,251 @@ unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
 </div>
 
 <!-- schedule_id is passed directly in wire:click to selectTimeSlot -->
+
+<script>
+    function showConsultorioSearch() {
+        var input = document.getElementById('consultorio-search');
+        if (input) {
+            input.classList.remove('hidden');
+            input.focus();
+        }
+    }
+</script>
+
+<script>
+    function toggleDoctorDropdown(e) {
+        e.preventDefault();
+        var root = document.getElementById('doctor-dropdown-root');
+        var dropdown = document.getElementById('doctor-dropdown');
+        var input = document.getElementById('doctor-dropdown-input');
+        if (!dropdown) return;
+        if (dropdown.classList.contains('hidden')) {
+            dropdown.classList.remove('hidden');
+            if (input) input.focus();
+            document.addEventListener('click', outsideDoctorDropdown);
+        } else {
+            dropdown.classList.add('hidden');
+            document.removeEventListener('click', outsideDoctorDropdown);
+        }
+    }
+
+    function outsideDoctorDropdown(ev) {
+        var root = document.getElementById('doctor-dropdown-root');
+        if (!root) return;
+        if (!root.contains(ev.target)) {
+            var dropdown = document.getElementById('doctor-dropdown');
+            if (dropdown && !dropdown.classList.contains('hidden')) dropdown.classList.add('hidden');
+            document.removeEventListener('click', outsideDoctorDropdown);
+        }
+    }
+
+    function selectDoctorPlace(id) {
+        // call Livewire method to set selection
+        if (window.Livewire) {
+            Livewire.emit('doctorPlaceSelected', id);
+        } else {
+            // fallback: get label for id via simple endpoint
+            fetch('/ajax/doctor-places/search?q=' + encodeURIComponent(id))
+                .then(r => r.json())
+                .then(data => {
+                    var sel = document.getElementById('doctor-dropdown-selected');
+                    if (sel) sel.textContent = (data[0] && data[0].label) || ('Consultorio #' + id);
+                }).catch(()=>{});
+        }
+        // close dropdown
+        var dropdown = document.getElementById('doctor-dropdown');
+        if (dropdown) dropdown.classList.add('hidden');
+    }
+
+    function doctorDropdownInputChanged(val) {
+        var dropdown = document.getElementById('doctor-dropdown');
+        var input = document.getElementById('doctor-dropdown-input');
+        if (!dropdown || !input) return;
+        console.log('[diag] doctorDropdownInputChanged value=', val);
+    // toggle clear button visibility
+    try { var clearBtn = document.getElementById('doctor-dropdown-clear'); if (clearBtn) clearBtn.classList.toggle('hidden', !(val && val.length > 0)); } catch(e){}
+
+    if (val && val.trim().length >= 3) {
+            dropdown.classList.remove('hidden');
+            console.log('[diag] show dropdown (3+ chars)');
+
+            // Populate dropdown client-side immediately via AJAX so the dropdown doesn't rely
+            // on Livewire to re-render its contents (which may close the dropdown).
+            fetch('/ajax/doctor-places/search?q=' + encodeURIComponent(val))
+                .then(r => r.json())
+                .then(data => {
+                    if (typeof populateDoctorDropdownFromJson === 'function') populateDoctorDropdownFromJson(data);
+                }).catch(e => console.error('[diag] fetch error', e));
+
+            if (window.Livewire) {
+                try {
+                    // prefer the Livewire component closest to the dropdown root so we don't target
+                    // unrelated components (eg. navigation-menu) which causes PublicPropertyNotFound
+                    var ddRoot = document.getElementById('doctor-dropdown-root');
+                    var livewireEl = null;
+                    if (ddRoot && typeof ddRoot.closest === 'function') {
+                        livewireEl = ddRoot.closest('[wire\\:id]');
+                    }
+                    // fallback to any on the page if closest didn't find one
+                    if (!livewireEl) livewireEl = document.querySelector('[wire\\:id]');
+                    if (livewireEl) {
+                        try {
+                            if (ddRoot) ddRoot.dataset.keepopen = '1';
+                        } catch(e){}
+                        // Use event-based sync instead of direct .set to avoid targeting component ids
+                        try {
+                            Livewire.emit('consultorioSearchUpdated', val);
+                            console.log('[diag] Livewire.emit consultorioSearchUpdated', val);
+                        } catch(e) {
+                            console.warn('[diag] Livewire.emit failed', e);
+                        }
+                    }
+                } catch (e) { console.warn('[diag] Livewire set failed', e); }
+            }
+        } else {
+            // if input emptied, clear the filter and repopulate default list
+            if (!val || val.trim().length === 0) {
+                console.log('[diag] input empty - clearing filter');
+                // clear client-side list to recent/default
+                fetch('/ajax/doctor-places/search')
+                    .then(r => r.json())
+                    .then(data => { if (typeof populateDoctorDropdownFromJson === 'function') populateDoctorDropdownFromJson(data); })
+                    .catch(e => console.error('[diag] fetch error', e));
+                // inform Livewire to clear its search term
+                try { Livewire.emit('consultorioSearchUpdated', ''); } catch(e){}
+                // ensure clear button hidden
+                try { var clearBtn2 = document.getElementById('doctor-dropdown-clear'); if (clearBtn2) clearBtn2.classList.add('hidden'); } catch(e){}
+                dropdown.classList.remove('hidden');
+                return;
+            }
+            console.log('[diag] not enough chars to search');
+        }
+    }
+
+    function clearDoctorDropdownFilter() {
+        var input = document.getElementById('doctor-dropdown-input');
+        if (input) input.value = '';
+        // repopulate default items
+        fetch('/ajax/doctor-places/search')
+            .then(r => r.json())
+            .then(data => { if (typeof populateDoctorDropdownFromJson === 'function') populateDoctorDropdownFromJson(data); })
+            .catch(e => console.error('[diag] fetch error', e));
+        // emit to Livewire to clear server-side term
+        try { Livewire.emit('consultorioSearchUpdated', ''); } catch(e){}
+        // hide clear button
+        try { var clearBtn = document.getElementById('doctor-dropdown-clear'); if (clearBtn) clearBtn.classList.add('hidden'); } catch(e){}
+        // ensure dropdown visible
+        var dropdown = document.getElementById('doctor-dropdown'); if (dropdown) dropdown.classList.remove('hidden');
+    }
+</script>
+
+<script>
+    function populateDoctorDropdownFromJson(items) {
+        var container = document.querySelector('#doctor-dropdown .max-h-48');
+        if (!container) return;
+        container.innerHTML = '';
+        if (!items || items.length === 0) {
+            container.innerHTML = '<div class="p-3 text-sm text-gray-500">No se encontraron coincidencias.</div>';
+            return;
+        }
+        items.forEach(function(it){
+            var el = document.createElement('div');
+            el.className = 'p-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer';
+            el.textContent = it.label;
+            el.onclick = function(){ selectDoctorPlace(it.id); };
+            container.appendChild(el);
+        });
+    }
+</script>
+
+<script>
+    // Livewire debug hooks - wait for Livewire to be available before attaching hooks
+    (function(){
+        var waited = 0;
+        var maxWait = 2000; // ms
+        var interval = 100; // ms
+        var handle = setInterval(function(){
+            if (window.Livewire) {
+                clearInterval(handle);
+                try {
+                    if (typeof Livewire.hook === 'function') {
+                        Livewire.hook('message.sent', (message, component) => {
+                            try {
+                                var ddRoot = document.getElementById('doctor-dropdown-root');
+                                if (ddRoot && ddRoot.dataset && ddRoot.dataset.keepopen) {
+                                    // store the expected message/component id so we can match on processed
+                                    var expected = null;
+                                    if (message && message.fingerprint && message.fingerprint.id) expected = message.fingerprint.id;
+                                    else if (message && message.component) expected = message.component;
+                                    else if (component && component.__instance && component.__instance.id) expected = component.__instance.id;
+                                    if (expected) {
+                                        ddRoot.dataset.expectedCid = expected;
+                                        console.log('[diag] stored expectedCid for dropdown reopen', expected);
+                                    }
+                                }
+                            } catch(e) { console.warn('[diag] message.sent hook error', e); }
+                        });
+                        Livewire.hook('message.failed', (message, component) => {
+                            console.error('[diag] Livewire message.failed', message);
+                        });
+                        Livewire.hook('message.processed', (message, component) => {
+                                try {
+                                // If our dropdown root requested to stay open, and this processed message
+                                // belongs to the same message/component we stored earlier, reopen the dropdown.
+                                var ddRoot = document.getElementById('doctor-dropdown-root');
+                                if (!ddRoot) return;
+                                if (!ddRoot.dataset || !ddRoot.dataset.keepopen) return;
+                                // find the id the sent hook stored (if any)
+                                var expectedCid = ddRoot.dataset.expectedCid || null;
+                                // derive the processed message id
+                                var targetCid = null;
+                                if (message && message.fingerprint && message.fingerprint.id) targetCid = message.fingerprint.id;
+                                else if (message && message.component) targetCid = message.component;
+                                else if (component && component.__instance && component.__instance.id) targetCid = component.__instance.id;
+                                // if expectedCid exists, require a match; otherwise fall back to closest element match
+                                var livewireEl = ddRoot.closest('[wire\\:id]') || document.querySelector('[wire\\:id]');
+                                if (!livewireEl) return;
+                                var cid = livewireEl.getAttribute('wire:id') || livewireEl.getAttribute('wire\\:id');
+                                if (!cid) return;
+                                if (expectedCid) {
+                                    if (String(expectedCid) !== String(targetCid) && String(expectedCid) !== String(cid)) {
+                                        // not the message we're expecting
+                                        console.log('[diag] skipping reopen; expected', expectedCid, 'got', targetCid, 'componentCid', cid);
+                                        // clear stored expected to avoid future false matches
+                                        try { delete ddRoot.dataset.expectedCid; } catch(e) { ddRoot.removeAttribute('data-expected-cid'); }
+                                        return;
+                                    }
+                                } else {
+                                    // no expected stored; require that processed message corresponds to this element's cid when possible
+                                    if (targetCid && String(targetCid) !== String(cid)) return;
+                                }
+                                // reopen dropdown
+                                var dropdown = document.getElementById('doctor-dropdown');
+                                if (dropdown) {
+                                    dropdown.classList.remove('hidden');
+                                    // clear markers after reopening
+                                    try { delete ddRoot.dataset.keepopen; delete ddRoot.dataset.expectedCid; } catch(e) { ddRoot.removeAttribute('data-keepopen'); ddRoot.removeAttribute('data-expected-cid'); }
+                                    var input = document.getElementById('doctor-dropdown-input'); if (input) input.focus();
+                                }
+                            } catch (e) {
+                                console.warn('[diag] error reopening dropdown', e);
+                            }
+                        });
+                    } else if (typeof Livewire.on === 'function') {
+                        Livewire.on('refreshComponent', payload => console.log('[diag] Livewire event refreshComponent', payload));
+                    }
+                    console.log('[diag] Livewire hooks attached');
+                } catch (e) {
+                    console.error('[diag] Livewire hooks error', e);
+                }
+                return;
+            }
+            waited += interval;
+            if (waited >= maxWait) {
+                clearInterval(handle);
+                console.warn('[diag] Livewire not found on window after ' + maxWait + 'ms');
+            }
+        }, interval);
+    })();
+</script>
 <?php /**PATH C:\laragon\www\medicall\resources\views/livewire/appointments.blade.php ENDPATH**/ ?>

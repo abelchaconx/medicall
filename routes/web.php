@@ -167,7 +167,45 @@ Route::middleware([
     Route::get('/test-dropdown', function () {
         return view('test-dropdown');
     })->name('test.dropdown');
+
+    // AJAX endpoint: search doctor medical offices (used as fallback when Livewire isn't available)
+    Route::get('/doctor-places/search', function () {
+        $q = request()->query('q');
+        $items = [];
+        if ($q && strlen(trim($q)) >= 3) {
+            $term = '%' . trim($q) . '%';
+            $query = \App\Models\DoctorMedicaloffice::with(['doctor.user','medicalOffice'])
+                ->whereHas('doctor.user', function($qq) use ($term) { $qq->where('name','like',$term); })
+                ->orWhereHas('medicalOffice', function($qq) use ($term) { $qq->where('name','like',$term); });
+            $results = $query->limit(20)->get();
+            $items = $results->map(function($dp){
+                $doctorName = data_get($dp, 'doctor.user.name') ?? ('Doctor #'.$dp->doctor_id);
+                $placeName = data_get($dp, 'medicalOffice.name') ?? ('MedicalOffice #'.($dp->medical_office_id ?? ''));
+                return ['id' => $dp->id, 'label' => $doctorName.' - '.$placeName];
+            })->values();
+        }
+        return response()->json($items);
+    })->name('doctor-places.search');
 });
 
 // Public API routes for testing (should be inside auth middleware in production)
     // Removed API-like endpoints for doctor-places and patients: application now uses server-rendered select options
+
+// Public AJAX search for doctor places (no auth)
+Route::get('/ajax/doctor-places/search', function () {
+    $q = request()->query('q');
+    $items = [];
+    if ($q && strlen(trim($q)) >= 3) {
+        $term = '%' . trim($q) . '%';
+        $query = \App\Models\DoctorMedicaloffice::with(['doctor.user','medicalOffice'])
+            ->whereHas('doctor.user', function($qq) use ($term) { $qq->where('name','like',$term); })
+            ->orWhereHas('medicalOffice', function($qq) use ($term) { $qq->where('name','like',$term); });
+        $results = $query->limit(20)->get();
+        $items = $results->map(function($dp){
+            $doctorName = data_get($dp, 'doctor.user.name') ?? ('Doctor #'.$dp->doctor_id);
+            $placeName = data_get($dp, 'medicalOffice.name') ?? ('MedicalOffice #'.($dp->medical_office_id ?? ''));
+            return ['id' => $dp->id, 'label' => $doctorName.' - '.$placeName];
+        })->values();
+    }
+    return response()->json($items);
+});
