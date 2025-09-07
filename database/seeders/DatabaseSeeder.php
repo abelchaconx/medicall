@@ -45,5 +45,22 @@ class DatabaseSeeder extends Seeder
                 'status' => 'active',
             ]);
         }
+
+        // Seed medical offices
+        $this->call([
+            MedicalOfficeSeeder::class,
+        ]);
+
+    // Seed some specialties (curated list)
+    $this->call([SpecialtySeeder::class]);
+
+        // Create example doctors and attach specialty + one or more medical offices
+        \App\Models\Doctor::factory()->count(10)->create()->each(function($doctor){
+            $specialty = \App\Models\Specialty::inRandomOrder()->first();
+            if ($specialty) $doctor->specialties()->sync([$specialty->id]);
+
+            $officeIds = \App\Models\MedicalOffice::inRandomOrder()->take(rand(1,3))->pluck('id')->toArray();
+            if (!empty($officeIds)) $doctor->medicalOffices()->sync($officeIds);
+        });
     }
 }

@@ -66,7 +66,7 @@ class TrashedPermissions extends Component
      * Backwards-compatibility: provide a safe emit(...) method so runtime code
      * calling $this->emit(...) won't fail. Forwards event to browser via dispatch.
      */
-    public function emit(...$params)
+    public function emit($event = null, ...$params)
     {
         if (empty($params)) {
             return null;

@@ -8,7 +8,7 @@
     </div>
 
     @if(session()->has('toast'))
-        <div class="mb-4 text-sm text-green-700">{{ session('toast.message') }}</div>
+        <script>window.dispatchEvent(new CustomEvent('showToast',{detail:@json(session('toast'))}));</script>
     @endif
 
     <div>

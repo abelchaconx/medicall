@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Formulario Nueva Cita - Medicall</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .test-success { background-color: #d4edda; border-color: #c3e6cb; }
+        .test-error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .test-warning { background-color: #fff3cd; border-color: #ffeaa7; }
+        h2 { color: #333; margin-top: 0; }
+        h3 { color: #666; }
+        .field-list { list-style-type: none; padding: 0; }
+        .field-list li { margin: 8px 0; padding: 8px; background: #f8f9fa; border-radius: 3px; }
+        .button { background: #007bff; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; text-decoration: none; display: inline-block; margin: 5px; }
+        .button:hover { background: #0056b3; }
+        .button.success { background: #28a745; }
+        .button.danger { background: #dc3545; }
+        .validation-rules { background: #e9ecef; padding: 10px; border-radius: 4px; margin: 10px 0; }
+        .api-test { background: #f8f9fa; padding: 10px; border-radius: 4px; margin: 10px 0; font-family: monospace; }
+    </style>
+</head>
+<body>
+    <h1>Test Completo - Formulario Nueva Cita</h1>
+    <p><strong>URL de prueba:</strong> <a href="http://medicall.test/appointments" target="_blank">http://medicall.test/appointments</a></p>
+
+    <div class="test-section test-warning">
+        <h2>🎯 Campos del Formulario Principal</h2>
+        <ul class="field-list">
+            <li><strong>Paciente:</strong> Select con opciones cargadas desde BD</li>
+            <li><strong>Consultorio:</strong> Select2 con búsqueda AJAX</li>
+            <li><strong>Fecha/Hora Inicio:</strong> datetime-local input</li>
+            <li><strong>Fecha/Hora Fin:</strong> datetime-local input (opcional)</li>
+            <li><strong>Estado:</strong> text input (ej. "scheduled", "completed")</li>
+            <li><strong>Notas:</strong> textarea para observaciones</li>
+        </ul>
+    </div>
+
+    <div class="test-section test-warning">
+        <h2>📅 Sistema de Reserva por Calendario</h2>
+        <ul class="field-list">
+            <li><strong>Selección de Consultorio:</strong> Select2 con búsqueda</li>
+            <li><strong>Calendario Visual:</strong> Navegación mes anterior/siguiente</li>
+            <li><strong>Días Disponibles:</strong> Marcados en verde si hay horarios</li>
+            <li><strong>Horas Disponibles:</strong> Lista de slots de tiempo libres</li>
+            <li><strong>Modal de Booking:</strong> Formulario para confirmar cita</li>
+        </ul>
+    </div>
+
+    <div class="test-section test-warning">
+        <h2>👤 Modal de Booking - Gestión de Pacientes</h2>
+        <ul class="field-list">
+            <li><strong>Checkbox:</strong> "Seleccionar paciente existente"</li>
+            <li><strong>Si existente:</strong> Select2 para buscar pacientes</li>
+            <li><strong>Si nuevo:</strong> Nombre, Email, Password</li>
+        </ul>
+    </div>
+
+    <div class="validation-rules">
+        <h3>🔍 Validaciones del Backend</h3>
+        <ul>
+            <li><strong>patient_id:</strong> required|exists:patients,id</li>
+            <li><strong>doctor_medicaloffice_id:</strong> required|exists:doctor_medicaloffices,id</li>
+            <li><strong>start_datetime:</strong> required|date</li>
+            <li><strong>end_datetime:</strong> nullable</li>
+            <li><strong>status:</strong> nullable|string</li>
+            <li><strong>notes:</strong> nullable|string</li>
+            <li><strong>Duplicados:</strong> No puede haber 2 citas con mismo doctor+fecha+hora</li>
+            <li><strong>Disponibilidad:</strong> Doctor debe tener horario registrado</li>
+        </ul>
+    </div>
+
+    <div class="api-test">
+        <h3>🔌 APIs Utilizadas</h3>
+        <p>API endpoints removed — this file is a legacy test page.</p>
+    </div>
+
+    <div class="test-section">
+        <h2>🧪 Tests a Realizar</h2>
+        
+        <h3>1. Test Select2 Consultorio</h3>
+    <div class="button">Test removed</div>
+    <div id="doctor-places-result">Removed</div>
+
+        <h3>2. Test Select2 Pacientes</h3>
+    <div class="button">Test removed</div>
+    <div id="patients-result">Removed</div>
+
+        <h3>3. Test Validaciones</h3>
+        <ul class="field-list">
+            <li>✅ Enviar formulario vacío (debe mostrar errores)</li>
+            <li>✅ Seleccionar consultorio válido</li>
+            <li>✅ Seleccionar paciente válido</li>
+            <li>✅ Ingresar fecha/hora válida</li>
+            <li>✅ Intentar crear cita duplicada</li>
+            <li>✅ Crear cita exitosa</li>
+        </ul>
+
+        <h3>4. Test Calendario UI</h3>
+        <ul class="field-list">
+            <li>✅ Navegación entre meses</li>
+            <li>✅ Selección de día disponible</li>
+            <li>✅ Ver horas disponibles</li>
+            <li>✅ Booking modal funcional</li>
+        </ul>
+
+        <h3>5. Test Modal Booking</h3>
+        <ul class="field-list">
+            <li>✅ Toggle entre paciente existente/nuevo</li>
+            <li>✅ Búsqueda de paciente existente</li>
+            <li>✅ Crear nuevo paciente</li>
+            <h1>Removed</h1>
+            <p>Removed test file.</p>
+    </div>
+
+    <div class="test-section test-success">
+        <h2>✅ Pasos para Test Manual</h2>
+        <ol>
+            <li><strong>Abrir página:</strong> <a href="http://medicall.test/appointments" target="_blank">http://medicall.test/appointments</a></li>
+            <li><strong>Hacer clic en "Nueva cita"</strong></li>
+            <li><strong>Test 1 - Formulario directo:</strong>
+                <ul>
+                    <li>Seleccionar paciente del dropdown</li>
+                    <li>Seleccionar consultorio del dropdown</li>
+                    <li>Ingresar fecha y hora</li>
+                    <li>Agregar notas opcionales</li>
+                    <li>Hacer clic en "Guardar"</li>
+                </ul>
+            </li>
+            <li><strong>Test 2 - Sistema calendario:</strong>
+                <ul>
+                    <li>Buscar consultorio con Select2</li>
+                    <li>Seleccionar día en calendario</li>
+                    <li>Hacer clic en hora disponible</li>
+                    <li>Completar modal de booking</li>
+                    <li>Confirmar reserva</li>
+                </ul>
+            </li>
+        </ol>
+    </div>
+
+    <script>
+        // Legacy test functions removed.
+        document.getElementById('doctor-places-result').textContent = 'Removed';
+        document.getElementById('patients-result').textContent = 'Removed';
+    </script>
+</body>
+</html>

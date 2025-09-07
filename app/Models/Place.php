@@ -11,15 +11,15 @@ class Place extends Model
     use HasFactory;
     use SoftDeletes;
 
-    protected $fillable = ['name','address_line','city','province','postal_code','phone','latitude','longitude'];
+    protected $fillable = ['name','address_line','city','province','otros','phone','latitude','longitude'];
 
     public function doctors()
     {
-        return $this->belongsToMany(Doctor::class, 'doctor_places')->withTimestamps();
+        return $this->belongsToMany(Doctor::class, 'doctor_medicaloffices')->withTimestamps();
     }
 
     public function doctorPlaces()
     {
-        return $this->hasMany(DoctorPlace::class);
+    return $this->hasMany(DoctorMedicaloffice::class);
     }
 }

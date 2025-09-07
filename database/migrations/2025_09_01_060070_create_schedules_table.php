@@ -10,14 +10,18 @@ return new class extends Migration
     {
         Schema::create('schedules', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('doctor_place_id')->constrained('doctor_places')->cascadeOnDelete();
+            $table->foreignId('doctor_medicaloffice_id')->constrained('doctor_medicaloffices')->cascadeOnDelete();
             $table->tinyInteger('weekday')->comment('0=Sunday..6=Saturday');
             $table->time('start_time');
             $table->time('end_time');
             $table->integer('duration_minutes')->default(30);
+            $table->date('valid_from')->nullable();
+            $table->date('valid_to')->nullable();
             $table->timestamps();
             $table->softDeletes();
-            $table->unique(['doctor_place_id','weekday','start_time','end_time'], 'sched_unique');
+
+            $table->unique(['doctor_medicaloffice_id','weekday','start_time','end_time'], 'sched_unique');
+            $table->index(['weekday']);
         });
     }
 

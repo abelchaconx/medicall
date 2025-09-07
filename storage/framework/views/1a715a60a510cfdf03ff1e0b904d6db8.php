@@ -29,6 +29,19 @@
                 </span>
             </a>
             
+            <div class="mt-4 border-t border-gray-100 dark:border-gray-700 pt-4">
+                <h4 class="px-4 text-xs text-gray-500 uppercase">Recursos</h4>
+                <a href="<?php echo e(route('medical-offices.index')); ?>" class="text-gray-800 dark:text-gray-200 block px-4 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 <?php echo e(request()->routeIs('medical-offices.*') ? 'bg-gray-200 dark:bg-gray-700 dark:text-gray-100 font-semibold' : ''); ?>">Consultorios</a>
+                <!-- <a href="<?php echo e(route('specialties.index')); ?>" class="text-gray-800 dark:text-gray-200 block px-4 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 <?php echo e(request()->routeIs('specialties.*') ? 'bg-gray-200 dark:bg-gray-700 dark:text-gray-100 font-semibold' : ''); ?>">Especialidades</a> -->
+                <a href="<?php echo e(route('doctors.index')); ?>" class="text-gray-800 dark:text-gray-200 block px-4 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 <?php echo e(request()->routeIs('doctors.*') ? 'bg-gray-200 dark:bg-gray-700 dark:text-gray-100 font-semibold' : ''); ?>">Doctores</a>
+                <a href="<?php echo e(route('patients.index')); ?>" class="text-gray-800 dark:text-gray-200 block px-4 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 <?php echo e(request()->routeIs('patients.*') ? 'bg-gray-200 dark:bg-gray-700 dark:text-gray-100 font-semibold' : ''); ?>">Pacientes</a>
+                <a href="<?php echo e(route('schedules.index')); ?>" class="text-gray-800 dark:text-gray-200 block px-4 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 <?php echo e(request()->routeIs('schedules.*') ? 'bg-gray-200 dark:bg-gray-700 dark:text-gray-100 font-semibold' : ''); ?>">Horarios</a>
+                <a href="<?php echo e(route('appointments.index')); ?>" class="text-gray-800 dark:text-gray-200 block px-4 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 <?php echo e(request()->routeIs('appointments.*') ? 'bg-gray-200 dark:bg-gray-700 dark:text-gray-100 font-semibold' : ''); ?>">Citas</a>
+                <a href="<?php echo e(route('prescriptions.index')); ?>" class="text-gray-800 dark:text-gray-200 block px-4 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 <?php echo e(request()->routeIs('prescriptions.*') ? 'bg-gray-200 dark:bg-gray-700 dark:text-gray-100 font-semibold' : ''); ?>">Prescripciones</a>
+                <a href="<?php echo e(route('payments.index')); ?>" class="text-gray-800 dark:text-gray-200 block px-4 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 <?php echo e(request()->routeIs('payments.*') ? 'bg-gray-200 dark:bg-gray-700 dark:text-gray-100 font-semibold' : ''); ?>">Pagos</a>
+                <a href="<?php echo e(route('audits.index')); ?>" class="text-gray-800 dark:text-gray-200 block px-4 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 <?php echo e(request()->routeIs('audits.*') ? 'bg-gray-200 dark:bg-gray-700 dark:text-gray-100 font-semibold' : ''); ?>">Auditoría</a>
+            </div>
+            
             
         </nav>
     </div>

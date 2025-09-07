@@ -67,12 +67,14 @@
                                     <div class="md:hidden flex justify-between items-center">
                                         <span class="text-sm font-medium text-gray-500">Acciones</span>
                                         <div class="flex items-center space-x-2">
-                                            <button onclick="confirmActionRoles('restore', {{ $role->id }})" class="inline-flex items-center justify-center w-9 h-9 rounded-full text-white bg-gradient-to-r from-green-500 to-green-600">R</button>
+                                                             <button onclick="confirmActionRoles('restore', {{ $role->id }})" class="inline-flex items-center justify-center w-9 h-9 rounded-full text-white bg-gradient-to-r from-green-500 to-green-600">R</button>
+                                                             <button onclick="confirmActionRoles('forceDelete', {{ $role->id }})" class="inline-flex items-center justify-center w-9 h-9 rounded-full text-white bg-gradient-to-r from-red-500 to-red-600">P</button>
                                         </div>
                                     </div>
                                     <div class="hidden md:flex md:flex-row md:items-center md:gap-2">
                                         <button onclick="confirmActionRoles('restore', {{ $role->id }})" class="w-full md:w-auto text-sm px-3 py-1 rounded text-white bg-gradient-to-r from-green-500 to-green-600">Restaurar</button>
-                                    </div>
+                                                         <button onclick="confirmActionRoles('forceDelete', {{ $role->id }})" class="w-full md:w-auto text-sm px-3 py-1 rounded text-white bg-gradient-to-r from-red-500 to-red-600">Eliminar permanentemente</button>
+                                                  </div>
                                 </div>
                             </td>
                         </tr>
@@ -96,7 +98,7 @@
 
     <!-- Toast container -->
     <div x-data="{ show:false, message:'', color:'bg-green-500', timer:null, open(payloadOrType, maybeMessage=''){ let type='green'; let message=''; if(payloadOrType && typeof payloadOrType === 'string'){ const s = payloadOrType.trim(); if((s.startsWith('{')&& s.endsWith('}'))||(s.startsWith('[')&&s.endsWith(']'))){ try{ payloadOrType = JSON.parse(payloadOrType);}catch(e){}}} if(payloadOrType && typeof payloadOrType==='object'){ const candidate = payloadOrType.detail && typeof payloadOrType.detail === 'object' ? payloadOrType.detail : payloadOrType; type = candidate.type || candidate[0] || candidate.status || 'green'; message = candidate.message || candidate[1] || candidate.text || ''; } else{ type = payloadOrType || 'green'; message = maybeMessage || ''; } type=(type||'green').toString(); message=(message||'').toString(); this.message = message; if(type === 'red') this.color='bg-red-500'; else if(type === 'orange') this.color='bg-orange-500'; else this.color='bg-green-500'; this.show=true; clearTimeout(this.timer); this.timer=setTimeout(()=> this.show=false,3500);} }"
-         x-init="window.addEventListener('toast', e => open(e.detail)); window.addEventListener('showToast', e => open(e.detail)); if(window.Livewire && typeof Livewire.on === 'function'){ Livewire.on('toast', (...args) => open(...args)); Livewire.on('showToast', (...args) => open(...args)); }"
+         x-init="window.addEventListener('toast', e => open(e.detail)); window.addEventListener('showToast', e => open(e.detail)); if(window.Livewire && typeof Livewire.on === 'function'){ // Livewire v3: toast events handled via addEventListener }"
          class="fixed bottom-6 right-6 flex items-end justify-end pointer-events-none z-50 px-4 sm:px-6" aria-live="polite">
         <div x-show="show" x-transition.opacity.duration.200ms class="pointer-events-auto">
             <div class="max-w-sm w-full bg-white dark:bg-gray-800 rounded-lg shadow-xl ring-1 ring-black ring-opacity-5 border border-gray-100 dark:border-gray-700 overflow-hidden flex items-center">
@@ -167,6 +169,14 @@
             pending = { action, id };
             document.getElementById('confirm-title-trashed-roles').textContent = '¿Deseas restaurar este rol?';
             document.getElementById('confirm-text-trashed-roles').textContent = 'El rol volverá a estar activo.';
+                    // pending.action may be 'restore' or 'forceDelete'
+                    if (pending.action === 'forceDelete') {
+                        document.getElementById('confirm-title-trashed-roles').textContent = '¿Deseas eliminar permanentemente este rol?';
+                        document.getElementById('confirm-text-trashed-roles').textContent = 'Esta acción no puede deshacerse.';
+                    } else {
+                        document.getElementById('confirm-title-trashed-roles').textContent = '¿Deseas restaurar este rol?';
+                        document.getElementById('confirm-text-trashed-roles').textContent = 'El rol volverá a estar activo.';
+                    }
             showModal();
             btnOk.focus();
         }

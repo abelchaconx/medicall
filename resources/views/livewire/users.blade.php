@@ -1,4 +1,4 @@
-<div>
+<div class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow">
             <!-- Top controls (3 columns: title | empty | actions) -->
             <div class="mb-4">
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 items-center">
@@ -75,7 +75,7 @@
     <div class="bg-transparent">
         <div class="w-full overflow-x-auto">
             <table class="min-w-full w-full table-auto text-gray-900 dark:text-gray-100">
-                <thead class="hidden md:table-header-group">
+                <thead class="hidden md:table-header-group bg-gray-50 dark:bg-gray-900">
                     <tr class="text-left">
                         <th class="px-3 py-2">ID</th>
                         <th class="px-3 py-2">Nombre</th>
@@ -86,7 +86,7 @@
                 </thead>
                 <tbody class="md:table-row-group">
                     @foreach($users as $user)
-                        <tr class="block md:table-row mb-3 md:mb-0 bg-white dark:bg-gray-800 rounded-lg md:rounded-none shadow-sm md:shadow-none overflow-hidden">
+                        <tr class="block md:table-row mb-3 md:mb-0 odd:bg-gray-50 even:bg-white dark:odd:bg-gray-800 dark:even:bg-gray-900 rounded-lg md:rounded-none shadow-sm md:shadow-none overflow-hidden">
                             <td class="px-3 py-1 block md:table-cell align-top">
                                 <div class="md:hidden flex justify-between items-start">
                                     <span class="text-sm font-medium text-gray-500 dark:text-gray-400">ID</span>
@@ -276,8 +276,8 @@
              window.addEventListener('toast', e => open(e.detail));
              window.addEventListener('showToast', e => open(e.detail));
              if (window.Livewire && typeof Livewire.on === 'function') {
-                 Livewire.on('toast', (...args) => open(...args));
-                 Livewire.on('showToast', (...args) => open(...args));
+                 // Livewire v3: toast events handled via addEventListener
+                 // Livewire v3: showToast events handled via addEventListener
              }
          "
          class="fixed bottom-6 right-6 flex items-end justify-end pointer-events-none z-50 px-4 sm:px-6" aria-live="polite">

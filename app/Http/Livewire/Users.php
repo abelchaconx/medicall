@@ -330,7 +330,7 @@ class Users extends Component
      * This forwards the event to the browser via dispatchBrowserEvent with the
      * event name as first argument and the rest as payload.
      */
-    public function emit(...$params)
+    public function emit($event = null, ...$params)
     {
         if (empty($params)) {
             return null;

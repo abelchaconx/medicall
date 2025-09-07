@@ -134,8 +134,8 @@
              window.addEventListener('toast', e => open(e.detail));
              window.addEventListener('showToast', e => open(e.detail));
              if (window.Livewire && typeof Livewire.on === 'function') {
-                 Livewire.on('toast', (...args) => open(...args));
-                 Livewire.on('showToast', (...args) => open(...args));
+                 // Livewire v3: toast events handled via addEventListener
+                 // Livewire v3: showToast events handled via addEventListener
              }
          "
          class="fixed bottom-6 right-6 flex items-end justify-end pointer-events-none z-50 px-4 sm:px-6" aria-live="polite">
