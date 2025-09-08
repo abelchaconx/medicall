@@ -26,6 +26,7 @@ class Schedules extends Component
     public $start_time;
     public $end_time;
     public $duration_minutes;
+    public $turno;
     
 
     protected $listeners = ['confirmAction', 'refreshComponent' => '$refresh'];
@@ -37,6 +38,7 @@ class Schedules extends Component
     // weekdays may be a CSV list like "1,2,3"
     'weekday' => ['nullable', 'regex:/^[1-6](?:\s*,\s*[1-6])*$/'],
     'weekdays' => ['nullable', 'regex:/^[1-6](?:\s*,\s*[1-6])*$/'],
+    'turno' => ['nullable', 'in:manana,tarde,noche'],
         'start_time' => 'nullable',
         'end_time' => 'nullable',
         'duration_minutes' => 'nullable|integer',
@@ -127,6 +129,7 @@ class Schedules extends Component
         $this->start_time = $schedule->start_time ?? null;
         $this->end_time = $schedule->end_time ?? null;
         $this->duration_minutes = $schedule->duration_minutes ?? null;
+    $this->turno = $schedule->turno ?? null;
         $this->showForm = true;
     }
 
@@ -167,6 +170,7 @@ class Schedules extends Component
                 'start_time' => $this->start_time,
                 'end_time' => $this->end_time,
                 'duration_minutes' => $this->duration_minutes,
+                'turno' => $this->turno,
             ]);
             $this->sendToast('green', 'Horario actualizado');
         } else {
@@ -194,7 +198,8 @@ class Schedules extends Component
                                 'weekdays' => $day ? (string)$day : null,
                                 'start_time' => $slot['start'],
                                 'end_time' => $slot['end'],
-                                'duration_minutes' => $this->duration_minutes,
+                                        'duration_minutes' => $this->duration_minutes,
+                                        'turno' => $this->turno,
                                 'batch_id' => $batchId,
                             ]);
                         }
@@ -218,7 +223,8 @@ class Schedules extends Component
                                 'weekdays' => (string)$day,
                                 'start_time' => $this->start_time,
                                 'end_time' => $this->end_time,
-                                'duration_minutes' => $this->duration_minutes,
+                                    'duration_minutes' => $this->duration_minutes,
+                                    'turno' => $this->turno,
                             ]);
                         }
                     });
@@ -236,7 +242,8 @@ class Schedules extends Component
                         'weekdays' => $this->weekday ? (string)$this->weekday : null,
                         'start_time' => $this->start_time,
                         'end_time' => $this->end_time,
-                        'duration_minutes' => $this->duration_minutes,
+                            'duration_minutes' => $this->duration_minutes,
+                            'turno' => $this->turno,
                     ]);
                     $this->sendToast('green', 'Horario creado');
                 }
@@ -255,6 +262,7 @@ class Schedules extends Component
     $this->doctor_id = null;
         $this->description = null;
         $this->weekday = null;
+    $this->turno = null;
         $this->start_time = null;
         $this->end_time = null;
         $this->duration_minutes = null;

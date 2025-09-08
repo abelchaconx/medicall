@@ -9,7 +9,7 @@
             <div class="col-span-1 flex justify-center sm:justify-end">
                 <div class="flex w-full gap-2">
                     <button wire:click="create" class="flex-1 text-white px-4 py-2 rounded h-10 bg-gradient-to-r from-green-500 to-green-600 hover:opacity-95 shadow-sm">Nuevo cita</button>
-                    <a href="{{ route('appointments.trashed') }}" class="flex-1 inline-flex items-center justify-center bg-gray-700 text-white px-4 py-2 rounded h-10 hover:bg-gray-800">Eliminados</a>
+                    <a href="<?php echo e(route('appointments.trashed')); ?>" class="flex-1 inline-flex items-center justify-center bg-gray-700 text-white px-4 py-2 rounded h-10 hover:bg-gray-800">Eliminados</a>
                 </div>
             </div>
         </div>
@@ -30,37 +30,58 @@
         </div>
     </div>
 
-    {{-- calendar/select2 area will be rendered inside the form section for new appointments --}}
+    
 
-    @if($showForm)
-        @if($appointmentId)
-            {{-- Edit existing appointment: keep the current form layout --}}
+    <!--[if BLOCK]><![endif]--><?php if($showForm): ?>
+        <!--[if BLOCK]><![endif]--><?php if($appointmentId): ?>
+            
             <div class="p-4 border rounded bg-white dark:bg-gray-800 mb-4">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    {{-- ...existing code... --}}
+                    
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Paciente</label>
                         <select wire:model.defer="patient_id" class="mt-1 block w-full border rounded px-2 py-1 bg-white dark:bg-gray-900 dark:text-gray-200">
                             <option value="">-- Selecciona paciente --</option>
-                            @foreach(($availablePatients ?? []) as $id => $label)
-                                <option value="{{ $id }}">{{ $label }}</option>
-                            @endforeach
+                            <!--[if BLOCK]><![endif]--><?php $__currentLoopData = ($availablePatients ?? []); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $id => $label): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <option value="<?php echo e($id); ?>"><?php echo e($label); ?></option>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
                         </select>
-                        @error('patient_id') <p class="text-xs text-red-600">{{ $message }}</p> @enderror
+                        <!--[if BLOCK]><![endif]--><?php $__errorArgs = ['patient_id'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> <p class="text-xs text-red-600"><?php echo e($message); ?></p> <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Consultorio</label>
                         <select wire:model="doctor_medicaloffice_id" wire:change="selectDoctor($event.target.value)" class="mt-1 block w-full border rounded px-2 py-1 bg-white dark:bg-gray-900 dark:text-gray-200">
                             <option value="">-- Selecciona consultorio --</option>
-                            @foreach(($availableDoctorMedicalOffices ?? []) as $id => $label)
-                                <option value="{{ $id }}">{{ $label }}</option>
-                            @endforeach
+                            <!--[if BLOCK]><![endif]--><?php $__currentLoopData = ($availableDoctorMedicalOffices ?? []); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $id => $label): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <option value="<?php echo e($id); ?>"><?php echo e($label); ?></option>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
                         </select>
-                        @error('doctor_medicaloffice_id') <p class="text-xs text-red-600">{{ $message }}</p> @enderror
+                        <!--[if BLOCK]><![endif]--><?php $__errorArgs = ['doctor_medicaloffice_id'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> <p class="text-xs text-red-600"><?php echo e($message); ?></p> <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
                     </div>
                         <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Inicio</label>
                         <input wire:model.defer="start_datetime" type="datetime-local" class="mt-1 block w-full border rounded px-2 py-1 bg-white dark:bg-gray-900 dark:text-gray-200" />
-                        @error('start_datetime') <p class="text-xs text-red-600">{{ $message }}</p> @enderror
+                        <!--[if BLOCK]><![endif]--><?php $__errorArgs = ['start_datetime'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> <p class="text-xs text-red-600"><?php echo e($message); ?></p> <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
                     </div>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
@@ -68,7 +89,7 @@
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Fin</label>
                         <input wire:model.defer="end_datetime" type="datetime-local" class="mt-1 block w-full border rounded px-2 py-1 bg-white dark:bg-gray-900 dark:text-gray-200" />
                     </div>
-                    @if($appointmentId)
+                    <!--[if BLOCK]><![endif]--><?php if($appointmentId): ?>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Estado</label>
                         <select wire:model.defer="status" class="mt-1 block w-full border rounded px-2 py-1 bg-white dark:bg-gray-900 dark:text-gray-200">
@@ -78,9 +99,16 @@
                             <option value="cancelled">Cancelled</option>
                             <option value="atendido">Atendido</option>
                         </select>
-                        @error('status') <p class="text-xs text-red-600">{{ $message }}</p> @enderror
+                        <!--[if BLOCK]><![endif]--><?php $__errorArgs = ['status'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> <p class="text-xs text-red-600"><?php echo e($message); ?></p> <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
                     </div>
-                    @endif
+                    <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
                     <div class="md:col-span-2">
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Notas</label>
                         <textarea wire:model.defer="notes" class="mt-1 block w-full border rounded px-2 py-1 bg-white dark:bg-gray-900 dark:text-gray-200"></textarea>
@@ -88,21 +116,21 @@
                 </div>
                 <!-- Buttons moved to footer below the 3-column grid -->
             </div>
-        @else
-            {{-- New appointment booking UI: 3 columns secuenciales --}}
+        <?php else: ?>
+            
 
-            {{-- ejemplos removed per request --}}
+            
             <div class="p-4 border rounded bg-white dark:bg-gray-800 mb-4">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {{-- Col 1: Select2 + calendario (siempre visible) --}}
+                    
                             <div>
                                 <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-200">1. Buscar consultorio (doctor - consultorio)</label>
-                        {{-- Custom dropdown with integrated search input --}}
+                        
                         <div class="relative" id="doctor-dropdown-root">
                             <!-- Hidden input bound to Livewire so JS can set value reliably regardless of client API -->
                             <input id="doctor-medicaloffice-hidden" type="hidden" wire:model="doctor_medicaloffice_id" />
                             <button type="button" id="doctor-dropdown-button" onclick="toggleDoctorDropdown(event)" class="w-full text-left mt-1 border rounded px-2 py-2 bg-white dark:bg-gray-900 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-800">
-                                <span id="doctor-dropdown-selected">{{ $availableDoctorMedicalOffices[$doctor_medicaloffice_id] ?? '-- Selecciona consultorio --' }}</span>
+                                <span id="doctor-dropdown-selected"><?php echo e($availableDoctorMedicalOffices[$doctor_medicaloffice_id] ?? '-- Selecciona consultorio --'); ?></span>
                             </button>
 
                             <div id="doctor-dropdown" class="absolute z-40 left-0 right-0 mt-1 bg-white dark:bg-gray-800 border rounded shadow-lg hidden">
@@ -115,23 +143,23 @@
                                     </button>
                                 </div>
                                 <div class="max-h-48 overflow-auto divide-y text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800">
-                                    @if(! $consultorio_search || strlen(trim($consultorio_search)) < 3)
+                                    <!--[if BLOCK]><![endif]--><?php if(! $consultorio_search || strlen(trim($consultorio_search)) < 3): ?>
                                         <!-- <div class="p-3 text-sm text-gray-500">Escribe 3 o más letras para filtrar resultados.</div> -->
-                                        @if(!empty($availableDoctorMedicalOffices))
+                                        <!--[if BLOCK]><![endif]--><?php if(!empty($availableDoctorMedicalOffices)): ?>
                                             <!-- <div class="p-2 text-xs text-gray-400">O selecciona uno de los recientes:</div> -->
-                                            @foreach(array_slice($availableDoctorMedicalOffices->toArray(), 0, 8, true) as $id => $label)
-                                                <div class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-gray-800 dark:text-gray-100" onclick="selectDoctorPlace({{ $id }})">{{ $label }}</div>
-                                            @endforeach
-                                        @endif
-                                    @else
-                                        @if(count($availableDoctorMedicalOffices) === 0)
+                                            <!--[if BLOCK]><![endif]--><?php $__currentLoopData = array_slice($availableDoctorMedicalOffices->toArray(), 0, 8, true); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $id => $label): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                                <div class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-gray-800 dark:text-gray-100" onclick="selectDoctorPlace(<?php echo e($id); ?>)"><?php echo e($label); ?></div>
+                                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
+                                        <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                                    <?php else: ?>
+                                        <!--[if BLOCK]><![endif]--><?php if(count($availableDoctorMedicalOffices) === 0): ?>
                                             <div class="p-3 text-sm text-gray-500 dark:text-gray-400">No se encontraron coincidencias.</div>
-                                        @else
-                                            @foreach($availableDoctorMedicalOffices as $id => $label)
-                                                <div class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-gray-800 dark:text-gray-100" onclick="selectDoctorPlace({{ $id }})">{{ $label }}</div>
-                                            @endforeach
-                                        @endif
-                                    @endif
+                                        <?php else: ?>
+                                            <!--[if BLOCK]><![endif]--><?php $__currentLoopData = $availableDoctorMedicalOffices; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $id => $label): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                                <div class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-gray-800 dark:text-gray-100" onclick="selectDoctorPlace(<?php echo e($id); ?>)"><?php echo e($label); ?></div>
+                                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
+                                        <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                                    <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
                                 </div>
                             </div>
                         </div>
@@ -140,8 +168,8 @@
 
 
 
-                        {{-- Calendario solo visible si hay consultorio seleccionado --}}
-                        @if($doctor_medicaloffice_id)
+                        
+                        <!--[if BLOCK]><![endif]--><?php if($doctor_medicaloffice_id): ?>
                             <div class="mt-3 p-2 bg-white dark:bg-gray-800 rounded border">
                                 <h4 class="text-sm font-medium mb-2 text-gray-700 dark:text-gray-200">2. Seleccionar fecha</h4>
                                 <div class="flex items-center justify-between mb-2">
@@ -149,25 +177,25 @@
                                         <button wire:click="prevMonth" class="px-2 py-1 border rounded bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200">&lt;</button>
                                         <button wire:click="nextMonth" class="px-2 py-1 border rounded bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200">&gt;</button>
                                     </div>
-                                    <div class="font-semibold text-sm text-gray-700 dark:text-gray-200">{{ \Carbon\Carbon::parse($calendarMonth)->format('F Y') }}</div>
+                                    <div class="font-semibold text-sm text-gray-700 dark:text-gray-200"><?php echo e(\Carbon\Carbon::parse($calendarMonth)->format('F Y')); ?></div>
                                 </div>
                                 <div class="grid grid-cols-7 gap-1 text-xs">
-                                    @foreach(['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'] as $d)
-                                        <div class="text-center font-medium">{{ $d }}</div>
-                                    @endforeach
-                                    @php
+                                    <!--[if BLOCK]><![endif]--><?php $__currentLoopData = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $d): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                        <div class="text-center font-medium"><?php echo e($d); ?></div>
+                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
+                                    <?php
                                         $start = \Carbon\Carbon::parse($calendarMonth)->startOfMonth();
                                         $end = \Carbon\Carbon::parse($calendarMonth)->endOfMonth();
                                         $pad = ($start->isoWeekday() === 7) ? 6 : ($start->isoWeekday()-1);
                                         $days = [];
                                         for ($i=0;$i<$pad;$i++) $days[] = null;
                                         for ($d = $start->copy(); $d->lte($end); $d->addDay()) $days[] = $d->format('Y-m-d');
-                                    @endphp
-                                    @foreach($days as $day)
-                                        @if(!$day)
+                                    ?>
+                                    <!--[if BLOCK]><![endif]--><?php $__currentLoopData = $days; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $day): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                        <!--[if BLOCK]><![endif]--><?php if(!$day): ?>
                                             <div class="h-12 border rounded bg-gray-50 dark:bg-gray-700"></div>
-                                        @else
-                                            @php
+                                        <?php else: ?>
+                                            <?php
                                                     $isSelected = $selected_date === $day;
                                                     $dayClass = 'h-12 border rounded p-1 cursor-pointer text-xs ';
                                                     $info = $dailyAvailability[$day] ?? null;
@@ -200,72 +228,80 @@
                                                             }
                                                         }
                                                     }
-                                                @endphp
-                                            <div class="{{ $dayClass }}" wire:click="selectDate('{{ $day }}')">
-                                                <div class="text-gray-800 dark:text-gray-100">{{ \Carbon\Carbon::parse($day)->format('j') }}</div>
+                                                ?>
+                                            <div class="<?php echo e($dayClass); ?>" wire:click="selectDate('<?php echo e($day); ?>')">
+                                                <div class="text-gray-800 dark:text-gray-100"><?php echo e(\Carbon\Carbon::parse($day)->format('j')); ?></div>
                                             </div>
-                                        @endif
-                                    @endforeach
+                                        <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
                                 </div>
                             </div>
-                        @else
+                        <?php else: ?>
                             <div class="mt-3 p-4 bg-gray-50 dark:bg-gray-700 rounded border text-center text-sm text-gray-500">
                                 ⏳ Selecciona un consultorio para ver el calendario
                             </div>
-                        @endif
+                        <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
                     </div>
 
-                    {{-- Col 2: Horas disponibles (solo visible si hay fecha seleccionada) --}}
+                    
                     <div>
-                        @if($selected_date && $doctor_medicaloffice_id)
+                        <!--[if BLOCK]><![endif]--><?php if($selected_date && $doctor_medicaloffice_id): ?>
                             <div class="p-3 bg-white dark:bg-gray-800 rounded border">
-                                <h3 class="font-semibold mb-2">3. Disponibles para {{ \Carbon\Carbon::parse($selected_date)->format('d/m/Y') }}</h3>
-                                @if(empty($available_hours))
+                                <h3 class="font-semibold mb-2">3. Disponibles para <?php echo e(\Carbon\Carbon::parse($selected_date)->format('d/m/Y')); ?></h3>
+                                <!--[if BLOCK]><![endif]--><?php if(empty($available_hours)): ?>
                                     <div class="text-sm text-gray-500 dark:text-gray-400">No hay horas disponibles para esta fecha.</div>
-                                @else
+                                <?php else: ?>
                                     <div class="grid grid-cols-2 gap-2">
-                                        @foreach($available_hours as $slot)
-                                            <button wire:click="selectTimeSlot('{{ $slot['start'] }}', {{ $slot['schedule_id'] ?? 'null' }})"
+                                        <!--[if BLOCK]><![endif]--><?php $__currentLoopData = $available_hours; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $slot): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                            <button wire:click="selectTimeSlot('<?php echo e($slot['start']); ?>', <?php echo e($slot['schedule_id'] ?? 'null'); ?>)"
                                                     class="px-2 py-1 bg-green-100 dark:bg-green-900 hover:bg-green-200 dark:hover:bg-green-800 rounded text-sm transition-colors text-gray-800 dark:text-gray-100">
-                                                {{ $slot['start'] }} - {{ $slot['end'] }}
+                                                <?php echo e($slot['start']); ?> - <?php echo e($slot['end']); ?>
+
                                             </button>
-                                        @endforeach
+                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
                                     </div>
-                                @endif
+                                <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
                             </div>
-                        @elseif($doctor_medicaloffice_id)
+                        <?php elseif($doctor_medicaloffice_id): ?>
                             <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded border text-center text-sm text-gray-500">
                                 📅 Selecciona una fecha para ver las horas disponibles
                             </div>
-                        @else
+                        <?php else: ?>
                             <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded border text-center text-sm text-gray-500">
                                 ⏳ Primero selecciona un consultorio
                             </div>
-                        @endif
+                        <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
                     </div>
 
-                    {{-- Col 3: Formulario de cita (solo visible si hay hora seleccionada) --}}
+                    
                     <div>
-                        @if($start_datetime && $doctor_medicaloffice_id && $selected_date)
+                        <!--[if BLOCK]><![endif]--><?php if($start_datetime && $doctor_medicaloffice_id && $selected_date): ?>
                             <div class="p-3 bg-white dark:bg-gray-800 rounded border">
-                                <h3 class="font-semibold mb-3">4. Cita para {{ \Carbon\Carbon::parse($start_datetime)->format('d/m/Y H:i') }}</h3>
+                                <h3 class="font-semibold mb-3">4. Cita para <?php echo e(\Carbon\Carbon::parse($start_datetime)->format('d/m/Y H:i')); ?></h3>
                                 <div class="space-y-3">
                                     <div>
                                         <label class="block text-sm font-medium mb-1">Paciente</label>
                                         <select wire:model.defer="patient_id" class="w-full border rounded px-2 py-1 bg-white dark:bg-gray-900 dark:text-gray-200">
                                             <option value="">-- Selecciona paciente --</option>
-                                            @foreach(($availablePatients ?? []) as $id => $label)
-                                                <option value="{{ $id }}">{{ $label }}</option>
-                                            @endforeach
+                                            <!--[if BLOCK]><![endif]--><?php $__currentLoopData = ($availablePatients ?? []); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $id => $label): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                                <option value="<?php echo e($id); ?>"><?php echo e($label); ?></option>
+                                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
                                         </select>
-                                        @error('patient_id') <p class="text-xs text-red-600">{{ $message }}</p> @enderror
+                                        <!--[if BLOCK]><![endif]--><?php $__errorArgs = ['patient_id'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> <p class="text-xs text-red-600"><?php echo e($message); ?></p> <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium mb-1">Tipo de consulta</label>
                                         <input wire:model.defer="consultation_type" type="text" placeholder="Ej: Consulta inicial" 
                                                class="w-full border rounded px-2 py-1 bg-white dark:bg-gray-900 dark:text-gray-200" />
                                     </div>
-                                    {{-- Estado is intentionally hidden during creation; shown only when editing an existing appointment --}}
+                                    
                                     <div>
                                         <label class="block text-sm font-medium mb-1">Consulta (detalle)</label>
                                         <textarea wire:model.defer="consultation_notes" rows="4" 
@@ -281,19 +317,19 @@
                                     <!-- Buttons moved to footer below the 3-column grid -->
                                 </div>
                             </div>
-                        @elseif($selected_date && $doctor_medicaloffice_id)
+                        <?php elseif($selected_date && $doctor_medicaloffice_id): ?>
                             <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded border text-center text-sm text-gray-500">
                                 ⏰ Selecciona una hora para completar la cita
                             </div>
-                        @elseif($doctor_medicaloffice_id)
+                        <?php elseif($doctor_medicaloffice_id): ?>
                             <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded border text-center text-sm text-gray-500">
                                 📅 Selecciona una fecha
                             </div>
-                        @else
+                        <?php else: ?>
                             <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded border text-center text-sm text-gray-500">
                                 ⏳ Comienza seleccionando un consultorio
                             </div>
-                        @endif
+                        <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
                     </div>
                 </div>
                 <!-- Footer buttons common to both edit and create flows -->
@@ -302,17 +338,17 @@
                     <button wire:click="resetForm" class="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded">Cancelar</button>
                 </div>
             </div>
-        @endif
-    @endif
+        <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+    <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
 
-    {{-- Select2 removed per request; no select2 assets or styles are loaded here --}}
+    
 
-    @php $items = $appointments ?? ($items ?? collect()); @endphp
-    @php
+    <?php $items = $appointments ?? ($items ?? collect()); ?>
+    <?php
         // state for group-based color alternation (persist across loop iterations)
         $__prevAppointmentGroup = null;
         $__appointmentGroupIndex = -1;
-    @endphp
+    ?>
 
     <!-- Legend: fixed colors per turno + palette samples -->
     <div class="mb-3 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
@@ -348,8 +384,8 @@
                 <tr class="text-left"><th class="px-3 py-2">Paciente</th><th class="px-3 py-2">Doctor</th><th class="px-3 py-2">Horario</th><th class="px-3 py-2">Acciones</th></tr>
             </thead>
             <tbody class="md:table-row-group">
-                @forelse($items as $item)
-                    @php
+                <!--[if BLOCK]><![endif]--><?php $__empty_1 = true; $__currentLoopData = $items; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                    <?php
                         // Build a grouping key: consultorio (doctor_medicaloffice_id) + date + turno
                         $dateForKey = $item->start_datetime ? \Carbon\Carbon::parse($item->start_datetime)->format('Y-m-d') : '';
                         // Prefer schedule.turno; if missing, infer from start hour
@@ -377,43 +413,43 @@
                         ];
                         $color = $groupPalette[$__appointmentGroupIndex % count($groupPalette)];
                         $rowHighlight = $color;
-                    @endphp
-                    <tr class="block md:table-row mb-3 md:mb-0 {{ $rowHighlight }} rounded-lg md:rounded-none shadow-sm md:shadow-none overflow-hidden">
-                        <td class="px-3 py-1 text-gray-800 dark:text-gray-100">{{ $item->patient?->name ?? ($item->patient_id ? 'Paciente #' . $item->patient_id : '—') }}</td>
+                    ?>
+                    <tr class="block md:table-row mb-3 md:mb-0 <?php echo e($rowHighlight); ?> rounded-lg md:rounded-none shadow-sm md:shadow-none overflow-hidden">
+                        <td class="px-3 py-1 text-gray-800 dark:text-gray-100"><?php echo e($item->patient?->name ?? ($item->patient_id ? 'Paciente #' . $item->patient_id : '—')); ?></td>
                         <td class="px-3 py-1">
-                            <div class="text-sm text-gray-800 dark:text-gray-100">{{ $item->doctorMedicalOffice?->doctor?->user?->name ?? '—' }}</div>
+                            <div class="text-sm text-gray-800 dark:text-gray-100"><?php echo e($item->doctorMedicalOffice?->doctor?->user?->name ?? '—'); ?></div>
                             <div class="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                                @php $office = $item->doctorMedicalOffice?->medicalOffice; @endphp
-                                @if($office)
-                                    <a href="{{ route('medical-offices.show', $office->id) }}?ajax=1" class="hover:underline consultorio-link" data-id="{{ $office->id }}">{{ $office->name }}</a>
-                                @else
+                                <?php $office = $item->doctorMedicalOffice?->medicalOffice; ?>
+                                <!--[if BLOCK]><![endif]--><?php if($office): ?>
+                                    <a href="<?php echo e(route('medical-offices.show', $office->id)); ?>?ajax=1" class="hover:underline consultorio-link" data-id="<?php echo e($office->id); ?>"><?php echo e($office->name); ?></a>
+                                <?php else: ?>
                                     —
-                                @endif
+                                <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
                             </div>
                         </td>
                         <td class="px-3 py-1 text-gray-800 dark:text-gray-100">
-                                    @php
+                                    <?php
                                         $turn = $appointmentTurns[$item->id] ?? null;
-                                    @endphp
-                                    @php $total = $appointmentTotals[$item->id] ?? null; @endphp
-                                    <div class="font-semibold">@if($turn && $total) Cita #{{ $turn }} de {{ $total }} @elseif($turn) Cita #{{ $turn }} @else Cita @endif</div>
-                                    <div class="text-sm text-gray-700 dark:text-gray-200 mt-1">{{ $item->start_datetime ? \Carbon\Carbon::parse($item->start_datetime)->format('d/m/Y') : '—' }}</div>
-                                    <div class="text-xs text-gray-600 dark:text-gray-400 mt-1">{{ $item->start_datetime ? \Carbon\Carbon::parse($item->start_datetime)->format('H:i') : '—' }}@if($item->end_datetime) - {{ \Carbon\Carbon::parse($item->end_datetime)->format('H:i') }}@endif</div>
+                                    ?>
+                                    <?php $total = $appointmentTotals[$item->id] ?? null; ?>
+                                    <div class="font-semibold"><!--[if BLOCK]><![endif]--><?php if($turn && $total): ?> Cita #<?php echo e($turn); ?> de <?php echo e($total); ?> <?php elseif($turn): ?> Cita #<?php echo e($turn); ?> <?php else: ?> Cita <?php endif; ?><!--[if ENDBLOCK]><![endif]--></div>
+                                    <div class="text-sm text-gray-700 dark:text-gray-200 mt-1"><?php echo e($item->start_datetime ? \Carbon\Carbon::parse($item->start_datetime)->format('d/m/Y') : '—'); ?></div>
+                                    <div class="text-xs text-gray-600 dark:text-gray-400 mt-1"><?php echo e($item->start_datetime ? \Carbon\Carbon::parse($item->start_datetime)->format('H:i') : '—'); ?><!--[if BLOCK]><![endif]--><?php if($item->end_datetime): ?> - <?php echo e(\Carbon\Carbon::parse($item->end_datetime)->format('H:i')); ?><?php endif; ?><!--[if ENDBLOCK]><![endif]--></div>
                                 </td>
                         <td class="px-3 py-1">
                             <div class="flex gap-2">
-                                <button wire:click="edit({{ $item->id ?? 0 }})" class="px-2 py-1 bg-yellow-400 text-white rounded">Editar</button>
-                                @if(method_exists($item, 'trashed') ? $item->trashed() : false)
-                                    <button onclick="confirmAction('restore', {{ $item->id ?? 0 }})" class="px-2 py-1 bg-green-600 text-white rounded">Restaurar</button>
-                                @else
-                                    <button onclick="confirmAction('delete', {{ $item->id ?? 0 }})" class="px-2 py-1 bg-red-600 text-white rounded">Eliminar</button>
-                                @endif
+                                <button wire:click="edit(<?php echo e($item->id ?? 0); ?>)" class="px-2 py-1 bg-yellow-400 text-white rounded">Editar</button>
+                                <!--[if BLOCK]><![endif]--><?php if(method_exists($item, 'trashed') ? $item->trashed() : false): ?>
+                                    <button onclick="confirmAction('restore', <?php echo e($item->id ?? 0); ?>)" class="px-2 py-1 bg-green-600 text-white rounded">Restaurar</button>
+                                <?php else: ?>
+                                    <button onclick="confirmAction('delete', <?php echo e($item->id ?? 0); ?>)" class="px-2 py-1 bg-red-600 text-white rounded">Eliminar</button>
+                                <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
                             </div>
                         </td>
                     </tr>
-                @empty
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                     <tr><td colspan="4" class="p-4 text-center text-gray-500">No hay registros</td></tr>
-                @endforelse
+                <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
             </tbody>
         </table>
     </div>
@@ -728,3 +764,4 @@
         }, interval);
     })();
 </script>
+<?php /**PATH C:\laragon\www\medicall\resources\views/livewire/appointments.blade.php ENDPATH**/ ?>

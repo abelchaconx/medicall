@@ -26,12 +26,14 @@ class Patients extends Component
     public $user_email;
     public $user_password;
     public $user_password_confirmation;
-    // quick-associate UI (removed)
+    // quick-associate UI
+    public $associateUserId;
 
     protected $listeners = ['confirmAction', 'refreshComponent' => '$refresh'];
 
     protected $rules = [
         'user_id' => 'nullable|exists:users,id',
+    'associateUserId' => 'nullable|exists:users,id',
         'gender' => 'nullable|in:male,female,other',
         'birthdate' => 'nullable|date',
         'phone' => 'nullable|string|max:255',
@@ -245,6 +247,28 @@ class Patients extends Component
     }
 
     // Quick associate helpers removed — feature deprecated from UI
+    // Re-introduced to support tests and small admin flows
+    public function openAssociate($patientId)
+    {
+        $patient = Patient::findOrFail($patientId);
+        $this->patientId = $patient->id;
+        $this->associateUserId = $patient->user_id;
+        // keep the main form closed; this is a quick modal-like flow in UI
+        $this->showForm = false;
+    }
+
+    public function associateSave()
+    {
+        $this->validate([
+            'associateUserId' => 'required|exists:users,id',
+        ]);
+
+        $patient = Patient::findOrFail($this->patientId);
+        $patient->update(['user_id' => $this->associateUserId]);
+
+        $this->sendToast('green', 'Usuario asociado al paciente');
+        try { $this->emit('refreshComponent'); } catch (\Throwable $e) {}
+    }
 
     public function performSearch()
     {

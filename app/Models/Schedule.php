@@ -11,7 +11,7 @@ class Schedule extends Model
     use HasFactory;
     use SoftDeletes;
 
-    protected $fillable = ['doctor_medicaloffice_id','weekday','weekdays','start_time','end_time','duration_minutes','valid_from','valid_to','batch_id'];
+    protected $fillable = ['doctor_medicaloffice_id','weekday','weekdays','start_time','end_time','duration_minutes','valid_from','valid_to','batch_id','turno'];
 
     protected $casts = [
         'valid_from' => 'date',

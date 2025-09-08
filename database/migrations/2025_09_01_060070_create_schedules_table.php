@@ -12,6 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('doctor_medicaloffice_id')->constrained('doctor_medicaloffices')->cascadeOnDelete();
             $table->tinyInteger('weekday')->comment('0=Sunday..6=Saturday');
+            $table->enum('turno', ['manana','tarde','noche'])->nullable()->comment('turno: manana, tarde, noche');
             $table->time('start_time');
             $table->time('end_time');
             $table->integer('duration_minutes')->default(30);

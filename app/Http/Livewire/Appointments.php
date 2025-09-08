@@ -63,8 +63,12 @@ class Appointments extends Component
             $query->where('notes', 'like', "%{$this->search}%")->orWhereHas('patient', function($q){ $q->where('name','like', "%{$this->search}%"); });
         }
 
-    // order by doctor and start_datetime so turns are consistent per doctor/day
-    $appointments = $query->orderBy('doctor_medicaloffice_id')->orderBy('start_datetime')->paginate(12);
+    // order by date (day) desc so future days come first, then by doctor and time asc so turns are consistent per doctor/day
+    $appointments = $query->with(['schedule'])
+        ->orderByRaw('DATE(start_datetime) desc')
+        ->orderBy('doctor_medicaloffice_id')
+        ->orderBy('start_datetime', 'asc')
+        ->paginate(12);
 
         // Precompute 'turn' (Cita #N) for appointments shown on this page to avoid
         // firing a DB query per row in the Blade template. The turn is the 1-based

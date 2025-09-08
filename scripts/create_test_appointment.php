@@ -32,6 +32,7 @@ $schedule = Schedule::create([
     'weekday' => $weekdayStored,
     'start_time' => '08:00:00',
     'end_time' => '18:00:00',
+    'turno' => null,
 ]);
 
 if (! $schedule) { echo "Failed to create schedule\n"; exit(1); }

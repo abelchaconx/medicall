@@ -62,5 +62,18 @@ class DatabaseSeeder extends Seeder
             $officeIds = \App\Models\MedicalOffice::inRandomOrder()->take(rand(1,3))->pluck('id')->toArray();
             if (!empty($officeIds)) $doctor->medicalOffices()->sync($officeIds);
         });
+
+        // Ensure each doctor user's name starts with 'Dr. ' for display
+        foreach (\App\Models\Doctor::with('user')->get() as $doc) {
+            if ($doc->user) {
+                $current = $doc->user->name ?? '';
+                if ($current && stripos($current, 'Dr.') !== 0 && stripos($current, 'Dr ') !== 0) {
+                    $doc->user->update(['name' => 'Dr. ' . $current]);
+                }
+            }
+        }
+
+        // Create 5 demo patients
+        \App\Models\Patient::factory()->count(5)->create();
     }
 }

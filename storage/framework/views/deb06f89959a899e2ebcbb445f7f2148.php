@@ -10,13 +10,13 @@
                     <button wire:click="create" class="flex-1 text-white px-4 py-2 rounded h-10 bg-gradient-to-r from-green-500 to-green-600">Nuevo horario</button>
                     
                     <!-- Direct link to trashed schedules page for users who prefer a dedicated view -->
-                    <a href="{{ url('/schedules/trashed') }}" class="flex-1 px-4 py-2 rounded h-10 bg-gray-700 text-white inline-flex items-center justify-center">Eliminados</a>
+                    <a href="<?php echo e(url('/schedules/trashed')); ?>" class="flex-1 px-4 py-2 rounded h-10 bg-gray-700 text-white inline-flex items-center justify-center">Eliminados</a>
                 </div>
             </div>
         </div>
     </div>
 
-    @if($showForm)
+    <!--[if BLOCK]><![endif]--><?php if($showForm): ?>
         <div class="p-4 border rounded bg-white dark:bg-gray-800 mb-4">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                 
@@ -24,26 +24,40 @@
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Doctor</label>
                     <select wire:model="doctor_id" class="mt-1 block w-full border rounded px-2 py-1 bg-white dark:bg-gray-900 dark:text-gray-200">
                         <option value="">-- Selecciona doctor --</option>
-                        @foreach(($availableDoctors ?? []) as $id => $label)
-                            <option value="{{ $id }}">{{ $label }}</option>
-                        @endforeach
+                        <!--[if BLOCK]><![endif]--><?php $__currentLoopData = ($availableDoctors ?? []); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $id => $label): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <option value="<?php echo e($id); ?>"><?php echo e($label); ?></option>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
                     </select>
-                    @error('doctor_id') <p class="text-xs text-red-600">{{ $message }}</p> @enderror
+                    <!--[if BLOCK]><![endif]--><?php $__errorArgs = ['doctor_id'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> <p class="text-xs text-red-600"><?php echo e($message); ?></p> <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Consultorio</label>
-                    <select wire:model.defer="doctor_medicaloffice_id" wire:key="doctor-{{ $doctor_id ?? 'none' }}" wire:loading.attr="disabled" @if($availableDoctorMedicalOffices->isEmpty() || empty($doctor_id)) disabled @endif class="mt-1 block w-full border rounded px-2 py-1 bg-white dark:bg-gray-900 dark:text-gray-200">
+                    <select wire:model.defer="doctor_medicaloffice_id" wire:key="doctor-<?php echo e($doctor_id ?? 'none'); ?>" wire:loading.attr="disabled" <?php if($availableDoctorMedicalOffices->isEmpty() || empty($doctor_id)): ?> disabled <?php endif; ?> class="mt-1 block w-full border rounded px-2 py-1 bg-white dark:bg-gray-900 dark:text-gray-200">
                         <option value="">-- Selecciona Consultorio --</option>
-                        @foreach(($availableDoctorMedicalOffices ?? []) as $id => $label)
-                            <option value="{{ $id }}">{{ $label }}</option>
-                        @endforeach
+                        <!--[if BLOCK]><![endif]--><?php $__currentLoopData = ($availableDoctorMedicalOffices ?? []); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $id => $label): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <option value="<?php echo e($id); ?>"><?php echo e($label); ?></option>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
                     </select>
-                    @if(empty($doctor_id))
+                    <!--[if BLOCK]><![endif]--><?php if(empty($doctor_id)): ?>
                         <p class="text-xs text-gray-500">Selecciona primero un doctor para ver sus consultorios médicos.</p>
-                    @elseif($availableDoctorMedicalOffices->isEmpty())
+                    <?php elseif($availableDoctorMedicalOffices->isEmpty()): ?>
                         <p class="text-xs text-gray-500">El doctor seleccionado no tiene consultorios médicos asignados.</p>
-                    @endif
-                    @error('doctor_medicaloffice_id') <p class="text-xs text-red-600">{{ $message }}</p> @enderror
+                    <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                    <!--[if BLOCK]><![endif]--><?php $__errorArgs = ['doctor_medicaloffice_id'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> <p class="text-xs text-red-600"><?php echo e($message); ?></p> <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Turno</label>
@@ -53,7 +67,14 @@
                         <option value="tarde">Tarde</option>
                         <option value="noche">Noche</option>
                     </select>
-                    @error('turno') <p class="text-xs text-red-600">{{ $message }}</p> @enderror
+                    <!--[if BLOCK]><![endif]--><?php $__errorArgs = ['turno'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> <p class="text-xs text-red-600"><?php echo e($message); ?></p> <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Día (weekday) — permite CSV: 1,2,3</label>
@@ -72,12 +93,26 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Duración (min)</label>
                     <input wire:model.defer="duration_minutes" type="number" min="0" class="mt-1 block w-full border rounded px-2 py-1 bg-white dark:bg-gray-900 dark:text-gray-200" />
-                    @error('duration_minutes') <p class="text-xs text-red-600">{{ $message }}</p> @enderror
+                    <!--[if BLOCK]><![endif]--><?php $__errorArgs = ['duration_minutes'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> <p class="text-xs text-red-600"><?php echo e($message); ?></p> <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Descripción</label>
                     <input wire:model.defer="description" type="text" class="mt-1 block w-full border rounded px-2 py-1 bg-white dark:bg-gray-900 dark:text-gray-200" />
-                    @error('description') <p class="text-xs text-red-600">{{ $message }}</p> @enderror
+                    <!--[if BLOCK]><![endif]--><?php $__errorArgs = ['description'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> <p class="text-xs text-red-600"><?php echo e($message); ?></p> <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
                 </div>
             </div>
         
@@ -86,16 +121,17 @@
                 <button wire:click="resetForm" class="bg-gray-200 px-3 py-2 rounded">Cancelar</button>
             </div>
         </div>
-    @endif
+    <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
 
-    @if(! $showForm && isset($availableDoctorMedicalOffices) && $availableDoctorMedicalOffices instanceof \Illuminate\Support\Collection && ! $availableDoctorMedicalOffices->isEmpty())
+    <!--[if BLOCK]><![endif]--><?php if(! $showForm && isset($availableDoctorMedicalOffices) && $availableDoctorMedicalOffices instanceof \Illuminate\Support\Collection && ! $availableDoctorMedicalOffices->isEmpty()): ?>
         <!-- Hidden helper for tests and non-form consumers: expose available consultorios labels in markup -->
         <div style="display:none" aria-hidden="true">
-            @foreach($availableDoctorMedicalOffices as $label)
-                {{ $label }}
-            @endforeach
+            <!--[if BLOCK]><![endif]--><?php $__currentLoopData = $availableDoctorMedicalOffices; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $label): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                <?php echo e($label); ?>
+
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
         </div>
-    @endif
+    <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
 
     <div class="mb-4">
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 items-center">
@@ -119,47 +155,48 @@
             <table class="min-w-full w-full table-auto text-gray-900 dark:text-gray-100">
                 <thead class="hidden md:table-header-group"><tr class="text-left"><th class="px-3 py-2"> </th><th class="px-3 py-2">ID</th><th class="px-3 py-2">Descripción</th><th class="px-3 py-2">Acciones</th></tr></thead>
                 <tbody class="md:table-row-group">
-                    @foreach($schedules as $schedule)
+                    <!--[if BLOCK]><![endif]--><?php $__currentLoopData = $schedules; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $schedule): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                 <tr class="block md:table-row mb-3 md:mb-0 odd:bg-gray-50 even:bg-white dark:odd:bg-gray-800 dark:even:bg-gray-900 rounded-lg md:rounded-none shadow-sm md:shadow-none overflow-hidden">
-                            <td class="px-3 py-1">{{ $schedule->id }}</td>
+                            <td class="px-3 py-1"><?php echo e($schedule->id); ?></td>
                             <td class="px-3 py-1">
-                                <div class="font-semibold">{{ $schedule->description ?? ($schedule->name ?? '—') }}</div>
-                                <div class="text-xs text-gray-500">{{ $schedule->doctorMedicalOffice?->doctor?->user?->name ?? $schedule->doctorMedicalOffice?->medicalOffice?->name ?? '' }}</div>
+                                <div class="font-semibold"><?php echo e($schedule->description ?? ($schedule->name ?? '—')); ?></div>
+                                <div class="text-xs text-gray-500"><?php echo e($schedule->doctorMedicalOffice?->doctor?->user?->name ?? $schedule->doctorMedicalOffice?->medicalOffice?->name ?? ''); ?></div>
                                 <div class="mt-2 text-xs">
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-xs">Día: {{ $schedule->weekdays ?? $schedule->weekday }}</span>
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-xs ml-2">{{ $schedule->start_time }} — {{ $schedule->end_time }} ({{ $schedule->duration_minutes }}m)</span>
-                                        @if($schedule->turno)
-                                            <span class="inline-flex items-center px-2 py-0.5 rounded bg-blue-100 text-xs ml-2">{{ ucfirst($schedule->turno) }}</span>
-                                        @endif
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-xs">Día: <?php echo e($schedule->weekdays ?? $schedule->weekday); ?></span>
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-xs ml-2"><?php echo e($schedule->start_time); ?> — <?php echo e($schedule->end_time); ?> (<?php echo e($schedule->duration_minutes); ?>m)</span>
+                                        <!--[if BLOCK]><![endif]--><?php if($schedule->turno): ?>
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded bg-blue-100 text-xs ml-2"><?php echo e(ucfirst($schedule->turno)); ?></span>
+                                        <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
                                 </div>
                             </td>
                 <td class="px-3 py-1">
-                    @if($schedule->trashed())
-                                        <button wire:click="restore({{ $schedule->id }})" class="px-3 py-1 rounded text-white bg-green-600">Restaurar</button>
-                                        <button wire:click="forceDelete({{ $schedule->id }})" class="px-3 py-1 rounded text-white bg-red-800">Eliminar permanentemente</button>
-                                    @else
-                                        <button wire:click="edit({{ $schedule->id }})" class="px-3 py-1 rounded text-white bg-yellow-400">Editar</button>
-                                        <button data-schedule-id="{{ $schedule->id }}" class="manage-exc-btn px-3 py-1 rounded text-white bg-blue-600">Excepciones
-                                            <span class="ml-2 inline-block bg-white text-gray-700 px-2 py-0.5 rounded text-xs">{{ $schedule->exceptions()->count() }}</span>
+                    <!--[if BLOCK]><![endif]--><?php if($schedule->trashed()): ?>
+                                        <button wire:click="restore(<?php echo e($schedule->id); ?>)" class="px-3 py-1 rounded text-white bg-green-600">Restaurar</button>
+                                        <button wire:click="forceDelete(<?php echo e($schedule->id); ?>)" class="px-3 py-1 rounded text-white bg-red-800">Eliminar permanentemente</button>
+                                    <?php else: ?>
+                                        <button wire:click="edit(<?php echo e($schedule->id); ?>)" class="px-3 py-1 rounded text-white bg-yellow-400">Editar</button>
+                                        <button data-schedule-id="<?php echo e($schedule->id); ?>" class="manage-exc-btn px-3 py-1 rounded text-white bg-blue-600">Excepciones
+                                            <span class="ml-2 inline-block bg-white text-gray-700 px-2 py-0.5 rounded text-xs"><?php echo e($schedule->exceptions()->count()); ?></span>
                                         </button>
-                                        <button wire:click="deleteSingle({{ $schedule->id }})" class="px-3 py-1 rounded text-white bg-red-600">Eliminar</button>
-                                        @if($schedule->batch_id)
-                                            <button wire:click="deleteBatch('{{ $schedule->batch_id }}')" class="px-3 py-1 rounded text-white bg-red-800">Eliminar lote</button>
-                                        @endif
-                                    @endif
+                                        <button wire:click="deleteSingle(<?php echo e($schedule->id); ?>)" class="px-3 py-1 rounded text-white bg-red-600">Eliminar</button>
+                                        <!--[if BLOCK]><![endif]--><?php if($schedule->batch_id): ?>
+                                            <button wire:click="deleteBatch('<?php echo e($schedule->batch_id); ?>')" class="px-3 py-1 rounded text-white bg-red-800">Eliminar lote</button>
+                                        <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                                    <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
                                 </div>
                             </td>
                         </tr>
-                    @endforeach
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
                 </tbody>
             </table>
         </div>
         <div class="p-3">
-            {{ $schedules->links() }}
+            <?php echo e($schedules->links()); ?>
+
         </div>
     </div>
 
-    @includeWhen(View::exists('livewire._partials.toast_confirm'), 'livewire._partials.toast_confirm')
+    <?php echo $__env->renderWhen(View::exists('livewire._partials.toast_confirm'), 'livewire._partials.toast_confirm', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1])); ?>
     
     <!-- Exceptions modal -->
     <div id="exceptions-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black bg-opacity-50 p-4">
@@ -176,7 +213,7 @@
 
     <script>
         async function openExceptionsModal(scheduleId){
-            const url = `{{ url('/schedules') }}/${scheduleId}/exceptions?ajax=1`;
+            const url = `<?php echo e(url('/schedules')); ?>/${scheduleId}/exceptions?ajax=1`;
             try {
                 const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
                 if (!res.ok) throw new Error('Fetch failed');
@@ -277,3 +314,4 @@
         })();
     </script>
 </div>
+<?php /**PATH C:\laragon\www\medicall\resources\views/livewire/schedules.blade.php ENDPATH**/ ?>

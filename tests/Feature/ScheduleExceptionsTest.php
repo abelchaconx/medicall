@@ -35,6 +35,7 @@ class ScheduleExceptionsTest extends TestCase
             'end_time' => '10:00:00',
             'duration_minutes' => 60,
             'description' => 'Test schedule',
+            'turno' => null,
         ]);
 
         // Run Livewire component and create exception
